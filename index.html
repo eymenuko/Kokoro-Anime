@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kokoro Anime – Ruhunu Dinlendiren Anime Dünyası</title>
+  <meta name="description" content="Kokoro Anime, rahatlatıcı pastel tasarımıyla anime izleme deneyimini yeniden tanımlıyor. Popüler animeleri keşfet, listeni oluştur, izlemeye başla." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ─── NAVBAR ─── -->
+  <nav class="navbar" id="navbar">
+    <div class="nav-inner">
+      <a href="#" class="logo" id="logo-link">
+        <span class="logo-kanji">心</span>
+        <span class="logo-text">KOKORO</span>
+        <span class="logo-sub">ANIME</span>
+      </a>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="#" class="nav-link active" id="nav-home">Ana Sayfa</a></li>
+        <li><a href="#anime-section" class="nav-link" id="nav-anime">Animeler</a></li>
+        <li><a href="#popular-section" class="nav-link" id="nav-popular">Popüler</a></li>
+        <li><a href="#list-section" class="nav-link" id="nav-list">Listem</a></li>
+      </ul>
+      <div class="nav-actions">
+        <button class="search-btn" id="search-toggle-btn" aria-label="Ara">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
+        <button class="login-btn" id="login-btn">Giriş Yap</button>
+      </div>
+      <button class="hamburger" id="hamburger" aria-label="Menü">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ─── SEARCH OVERLAY ─── -->
+  <div class="search-overlay" id="search-overlay">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="search-input" placeholder="Anime ara… (örn: Naruto, Attack on Titan)" autocomplete="off" />
+      <button id="search-close" aria-label="Kapat">✕</button>
+    </div>
+    <div class="search-results" id="search-results"></div>
+  </div>
+
+  <!-- ─── HERO ─── -->
+  <section class="hero" id="hero">
+    <div class="hero-bg">
+      <div class="sakura-container" id="sakura-container"></div>
+      <div class="hero-gradient"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">🌸 Yeni Sezon Başladı</div>
+      <h1 class="hero-title">Ruhunu Dinlendiren<br/><em>Anime Dünyası</em></h1>
+      <p class="hero-desc">Pastel bir atmosferde, kalbini dokunduran animeleri keşfet.<br/>Stressiz, temiz ve tamamen senin için.</p>
+      <div class="hero-buttons">
+        <button class="btn-primary" id="hero-start-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          İzlemeye Başla
+        </button>
+        <button class="btn-secondary" id="hero-explore-btn">Keşfet</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">2,400+</span><span class="stat-label">Anime</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">150K+</span><span class="stat-label">İzleyici</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">HD</span><span class="stat-label">Kalite</span></div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="featured-card" id="featured-card">
+        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=560&fit=crop&crop=center" alt="Öne Çıkan Anime" class="featured-img" id="featured-img" />
+        <div class="featured-overlay">
+          <div class="featured-badge">⭐ 9.2</div>
+          <div class="featured-info">
+            <h3 id="featured-title">Your Name</h3>
+            <p id="featured-genre">Romantik · Drama</p>
+          </div>
+          <button class="featured-play" id="featured-play-btn">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── GENRE FILTER ─── -->
+  <section class="genre-section" id="genre-section">
+    <div class="container">
+      <div class="genre-chips">
+        <button class="genre-chip active" data-genre="all" id="genre-all">Tümü</button>
+        <button class="genre-chip" data-genre="romantik" id="genre-romantik">💕 Romantik</button>
+        <button class="genre-chip" data-genre="aksiyon" id="genre-aksiyon">⚡ Aksiyon</button>
+        <button class="genre-chip" data-genre="slice-of-life" id="genre-sol">🌿 Slice of Life</button>
+        <button class="genre-chip" data-genre="drama" id="genre-drama">🎭 Drama</button>
+        <button class="genre-chip" data-genre="fantezi" id="genre-fantezi">✨ Fantezi</button>
+        <button class="genre-chip" data-genre="komedi" id="genre-komedi">😄 Komedi</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── POPULAR ANIME SECTION ─── -->
+  <section class="anime-section" id="popular-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-icon">🔥</span>
+          <h2 class="section-title">Popüler Animeler</h2>
+        </div>
+        <a href="#" class="see-all" id="see-all-popular">Tümünü Gör →</a>
+      </div>
+      <div class="carousel-wrapper">
+        <button class="carousel-btn carousel-prev" id="popular-prev" aria-label="Geri">‹</button>
+        <div class="anime-row" id="popular-row"></div>
+        <button class="carousel-btn carousel-next" id="popular-next" aria-label="İleri">›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── NEW ANIME SECTION ─── -->
+  <section class="anime-section lavender-bg" id="anime-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-icon">✨</span>
+          <h2 class="section-title">Yeni Eklenenler</h2>
+        </div>
+        <a href="#" class="see-all" id="see-all-new">Tümünü Gör →</a>
+      </div>
+      <div class="carousel-wrapper">
+        <button class="carousel-btn carousel-prev" id="new-prev" aria-label="Geri">‹</button>
+        <div class="anime-row" id="new-row"></div>
+        <button class="carousel-btn carousel-next" id="new-next" aria-label="İleri">›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── RECOMMENDED SECTION ─── -->
+  <section class="anime-section" id="recommended-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-icon">💌</span>
+          <h2 class="section-title">Senin İçin Önerilenler</h2>
+        </div>
+        <a href="#" class="see-all" id="see-all-rec">Tümünü Gör →</a>
+      </div>
+      <div class="carousel-wrapper">
+        <button class="carousel-btn carousel-prev" id="rec-prev" aria-label="Geri">‹</button>
+        <div class="anime-row" id="rec-row"></div>
+        <button class="carousel-btn carousel-next" id="rec-next" aria-label="İleri">›</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── MY LIST SECTION ─── -->
+  <section class="list-section" id="list-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-icon">📚</span>
+          <h2 class="section-title">Listem</h2>
+        </div>
+      </div>
+      <div class="list-tabs">
+        <button class="list-tab active" data-tab="watchlist" id="tab-watchlist">İzlenecekler</button>
+        <button class="list-tab" data-tab="completed" id="tab-completed">Bitirdiklerim</button>
+        <button class="list-tab" data-tab="favorites" id="tab-favorites">Favoriler ❤️</button>
+      </div>
+      <div class="list-grid" id="list-grid">
+        <div class="list-empty" id="list-empty">
+          <div class="empty-icon">🌸</div>
+          <p>Henüz listeniz boş.<br/>Anime kartlarına tıklayarak ekleyebilirsiniz.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── VIDEO PLAYER MODAL ─── -->
+  <div class="player-modal" id="player-modal">
+    <div class="player-backdrop" id="player-backdrop"></div>
+    <div class="player-container layout-split">
+      <button class="player-close" id="player-close" aria-label="Kapat">✕</button>
+      <div class="player-main">
+        <div class="player-header">
+          <div class="player-info">
+            <h2 class="player-title" id="player-title">Anime Adı</h2>
+            <p class="player-meta" id="player-meta">Bölüm 1 · HD</p>
+          </div>
+        </div>
+        <div class="video-wrapper">
+          <div class="video-placeholder" id="video-placeholder">
+            <div class="video-overlay-text">
+              <div class="video-play-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+              <h3 id="video-anime-title">Your Name</h3>
+              <p>Bu demo bir önizlemedir. Gerçek içerik için giriş yapın.</p>
+            </div>
+          </div>
+        </div>
+        <div class="player-controls">
+          <div class="progress-bar-wrapper">
+            <div class="progress-bar" id="progress-bar">
+              <div class="progress-fill" id="progress-fill" style="width:35%"></div>
+              <div class="progress-thumb" style="left:35%"></div>
+            </div>
+            <span class="time-current">13:45</span>
+            <span class="time-total">1:32:00</span>
+          </div>
+          <div class="controls-row">
+            <button class="ctrl-btn" id="ctrl-play" aria-label="Oynat/Durdur">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="ctrl-btn" id="ctrl-prev-ep" aria-label="Önceki Bölüm">⏮</button>
+            <button class="ctrl-btn" id="ctrl-next-ep" aria-label="Sonraki Bölüm">⏭</button>
+            <div class="volume-ctrl">
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              <input type="range" id="volume-range" min="0" max="100" value="80" class="volume-range" />
+            </div>
+            <span class="quality-badge">HD</span>
+            <button class="ctrl-btn fullscreen-btn" id="ctrl-fullscreen" aria-label="Tam Ekran">⛶</button>
+          </div>
+        </div>
+      </div>
+      <div class="player-sidebar">
+        <div class="episodes-panel">
+          <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <h4 class="episodes-title" id="sidebar-title" style="margin: 0;">Sezonlar</h4>
+            <button id="back-to-seasons" style="display: none; background: none; border: none; color: var(--sakura-pink); font-weight: 600; cursor: pointer;">← Geri</button>
+          </div>
+          <div class="seasons-list" id="seasons-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+          <div class="episodes-list" id="episodes-list" style="display: none;"></div>
+        </div>
+        <div class="next-episode-banner" id="next-ep-banner" style="display: none;">
+          <p>Sıradaki Bölüm</p>
+          <span id="next-ep-title">Bölüm 2: Yeni Başlangıç</span>
+          <button id="next-ep-btn" class="btn-primary">Hemen İzle →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── LOGIN MODAL ─── -->
+  <div class="modal-overlay" id="login-modal">
+    <div class="modal-card" id="login-card">
+      <button class="modal-close" id="login-close" aria-label="Kapat">✕</button>
+      <div class="modal-logo">
+        <span class="logo-kanji small">心</span>
+        <span>Kokoro Anime</span>
+      </div>
+      <h2 class="modal-title">Hoş Geldin 🌸</h2>
+      <p class="modal-sub">İzleme geçmişin ve listelerini kaydet</p>
+      <form class="login-form" id="login-form">
+        <div class="form-group">
+          <label for="email-input">E-posta</label>
+          <input type="email" id="email-input" placeholder="ornek@email.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="password-input">Şifre</label>
+          <input type="password" id="password-input" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button type="submit" class="btn-primary full-width" id="login-submit-btn">Giriş Yap</button>
+      </form>
+      <p class="modal-switch">Hesabın yok mu? <a href="#" id="switch-to-register">Kayıt Ol</a></p>
+      <div class="or-divider"><span>veya</span></div>
+      <button class="google-btn" id="google-login-btn">
+        <svg viewBox="0 0 24 24" width="20"><path fill="#EA4335" d="M5.26 9.77A7.49 7.49 0 0 1 12 4.5c1.8 0 3.43.64 4.7 1.69l3.5-3.5A12 12 0 0 0 12 0C7.31 0 3.25 2.7 1.28 6.65l3.98 3.12z"/><path fill="#34A853" d="M16.04 18.01A7.47 7.47 0 0 1 12 19.5a7.49 7.49 0 0 1-6.72-4.24l-3.98 3.1A12 12 0 0 0 12 24c3.24 0 6.17-1.18 8.42-3.12l-4.38-2.87z"/><path fill="#4A90D9" d="M20.42 20.88A11.96 11.96 0 0 0 24 12c0-.77-.07-1.52-.2-2.25H12v4.5h6.88a5.86 5.86 0 0 1-2.46 3.76l4 2.87z"/><path fill="#FBBC05" d="M5.28 14.26A7.47 7.47 0 0 1 4.5 12c0-.8.14-1.58.38-2.31L.9 6.57A11.96 11.96 0 0 0 0 12c0 1.93.46 3.76 1.28 5.38l3.98-3.12z"/></svg>
+        Google ile Devam Et
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── TOAST ─── -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="logo-kanji small">心</span>
+          <div>
+            <div class="footer-logo-text">KOKORO ANIME</div>
+            <p class="footer-tagline">Ruhunu dinlendiren anime dünyası</p>
+          </div>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>Keşfet</h4>
+            <a href="#">Popüler</a>
+            <a href="#">Yeni Sezon</a>
+            <a href="#">Klasikler</a>
+          </div>
+          <div class="footer-col">
+            <h4>Türler</h4>
+            <a href="#">Romantik</a>
+            <a href="#">Aksiyon</a>
+            <a href="#">Slice of Life</a>
+          </div>
+          <div class="footer-col">
+            <h4>Hesap</h4>
+            <a href="#">Giriş Yap</a>
+            <a href="#">Kayıt Ol</a>
+            <a href="#">Listem</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 Kokoro Anime · Tüm hakları saklıdır 🌸</p>
+        <div class="footer-socials">
+          <a href="#" aria-label="Twitter">𝕏</a>
+          <a href="#" aria-label="Instagram">📷</a>
+          <a href="#" aria-label="Discord">💬</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

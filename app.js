@@ -1,0 +1,436 @@
+document.addEventListener('DOMContentLoaded', () => {
+  // ─── NAVBAR SCROLL ───
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      navbar.classList.add('scrolled');
+    } else {
+      navbar.classList.remove('scrolled');
+    }
+  });
+
+  // ─── SAKURA ANIMATION ───
+  const sakuraContainer = document.getElementById('sakura-container');
+  if (sakuraContainer) {
+    const createPetal = () => {
+      const petal = document.createElement('div');
+      petal.classList.add('sakura-petal');
+      
+      // Rastgele pozisyon ve boyut
+      const startLeft = Math.random() * 100;
+      const size = Math.random() * 10 + 5;
+      const duration = Math.random() * 5 + 5;
+      const delay = Math.random() * 5;
+      
+      petal.style.left = `${startLeft}vw`;
+      petal.style.width = `${size}px`;
+      petal.style.height = `${size}px`;
+      petal.style.animationDuration = `${duration}s`;
+      petal.style.animationDelay = `${delay}s`;
+      
+      sakuraContainer.appendChild(petal);
+      
+      // Animasyon bitince sil
+      setTimeout(() => {
+        petal.remove();
+      }, (duration + delay) * 1000);
+    };
+
+    // İlk başta birkaç tane oluştur
+    for (let i = 0; i < 20; i++) {
+      createPetal();
+    }
+    
+    // Sürekli oluştur
+    setInterval(createPetal, 400);
+  }
+
+  // ─── MOCK DATA ───
+  const animes = [
+    { id: 1, title: 'Your Name', genre: 'Romantik', img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', eps: 1 },
+    { id: 2, title: 'Spirited Away', genre: 'Fantezi', img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&h=600&fit=crop', eps: 1 },
+    { id: 3, title: 'A Silent Voice', genre: 'Drama', img: 'https://images.unsplash.com/photo-1580477655166-51f7bb980d9a?w=400&h=600&fit=crop', eps: 1 },
+    { id: 4, title: 'Violet Evergarden', genre: 'Drama', img: 'https://images.unsplash.com/photo-1613376023733-0a73315d9b06?w=400&h=600&fit=crop', eps: 13 },
+    { id: 5, title: 'Jujutsu Kaisen', genre: 'Aksiyon', img: 'https://images.unsplash.com/photo-1601850494422-3fb19e13fcdb?w=400&h=600&fit=crop', eps: 24 },
+    { id: 6, title: 'Demon Slayer', genre: 'Aksiyon', img: 'https://images.unsplash.com/photo-1611078713203-9118e61fb162?w=400&h=600&fit=crop', eps: 26 },
+    { id: 7, title: 'Horimiya', genre: 'Romantik', img: 'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400&h=600&fit=crop', eps: 13 },
+    { id: 8, title: 'Frieren', genre: 'Fantezi', img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&h=600&fit=crop', eps: 28 },
+  ];
+
+  // ─── RENDER CARDS ───
+  const createCard = (anime) => {
+    return `
+      <div class="anime-card" data-id="${anime.id}">
+        <div class="card-img-wrapper">
+          <img src="${anime.img}" alt="${anime.title}" class="card-img" loading="lazy" />
+          <div class="card-badge">⭐ 9.0</div>
+          <button class="card-add-btn" aria-label="Listeye Ekle">+</button>
+          <div class="card-overlay">
+            <span class="play-text">İzle</span>
+          </div>
+        </div>
+        <div class="card-info">
+          <h3 class="card-title">${anime.title}</h3>
+          <span class="card-meta">${anime.genre} · ${anime.eps} Bölüm</span>
+        </div>
+      </div>
+    `;
+  };
+
+  const populateRow = (rowId, items) => {
+    const row = document.getElementById(rowId);
+    if (row) {
+      row.innerHTML = items.map(createCard).join('');
+    }
+  };
+
+  populateRow('popular-row', animes);
+  populateRow('new-row', [...animes].reverse());
+  populateRow('rec-row', [...animes].sort(() => 0.5 - Math.random()));
+
+  // ─── CAROUSEL CONTROLS ───
+  const setupCarousel = (prevBtnId, nextBtnId, rowId) => {
+    const prevBtn = document.getElementById(prevBtnId);
+    const nextBtn = document.getElementById(nextBtnId);
+    const row = document.getElementById(rowId);
+    
+    if (!prevBtn || !nextBtn || !row) return;
+
+    const scrollAmount = 300;
+
+    prevBtn.addEventListener('click', () => {
+      row.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+    });
+
+    nextBtn.addEventListener('click', () => {
+      row.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    });
+  };
+
+  setupCarousel('popular-prev', 'popular-next', 'popular-row');
+  setupCarousel('new-prev', 'new-next', 'new-row');
+  setupCarousel('rec-prev', 'rec-next', 'rec-row');
+
+  // ─── TOAST NOTIFICATION ───
+  const toastContainer = document.getElementById('toast-container');
+  const showToast = (message, icon = '🌸') => {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<span class="toast-icon">${icon}</span><span>${message}</span>`;
+    toastContainer.appendChild(toast);
+    
+    // Animate in
+    requestAnimationFrame(() => {
+      toast.classList.add('show');
+    });
+    
+    // Remove after 3s
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  };
+
+  // Add to list functionality
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.card-add-btn')) {
+      e.stopPropagation();
+      showToast('Listeye eklendi!', '✨');
+    }
+  });
+
+  // ─── PLAYER MODAL ───
+  const playerModal = document.getElementById('player-modal');
+  const playerClose = document.getElementById('player-close');
+  const playerBackdrop = document.getElementById('player-backdrop');
+  
+  let currentEp = 0;
+  let totalEps = 12;
+  let currentSeason = 1;
+  let totalSeasons = 3;
+  const mockEpNames = ["Yeni Başlangıç", "Gizli Güç", "Karanlık Gece", "Umut Işığı", "Beklenmedik Misafir", "Sonsuz Yolculuk", "Geçmişin İzleri", "Büyük Savaş", "Kayıp Şehir", "Yeniden Doğuş", "Son Karar", "Barış Zamanı"];
+
+  const setEpisode = (ep) => {
+    if (ep < 1 || ep > totalEps) return;
+    currentEp = ep;
+    const epBtns = document.querySelectorAll('.ep-btn');
+    epBtns.forEach(b => b.classList.remove('active'));
+    
+    const activeBtn = Array.from(epBtns).find(b => parseInt(b.dataset.ep) === ep);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    document.getElementById('player-meta').textContent = `Sezon ${currentSeason} · Bölüm ${ep} · HD`;
+    
+    // Show player controls and play icon
+    document.querySelector('.player-controls').style.opacity = '1';
+    document.querySelector('.player-controls').style.pointerEvents = 'auto';
+    document.querySelector('.video-play-icon').style.display = 'flex';
+    document.querySelector('#video-anime-title').nextElementSibling.textContent = 'Bu demo bir önizlemedir. Gerçek içerik için giriş yapın.';
+    
+    // Update next episode banner
+    const nextBanner = document.getElementById('next-ep-banner');
+    if (ep < totalEps) {
+      nextBanner.style.display = 'flex';
+      const nextName = mockEpNames[(ep) % mockEpNames.length] || "Sıradaki Macera";
+      document.getElementById('next-ep-title').textContent = `Bölüm ${ep + 1}: ${nextName}`;
+    } else {
+      nextBanner.style.display = 'none';
+    }
+  };
+
+  const showEpisodes = (season) => {
+    currentSeason = season;
+    document.getElementById('sidebar-title').textContent = `${season}. Sezon Bölümleri`;
+    document.getElementById('back-to-seasons').style.display = 'block';
+    document.getElementById('seasons-list').style.display = 'none';
+    
+    const epList = document.getElementById('episodes-list');
+    epList.style.display = 'flex';
+    let epsHTML = '';
+    for (let i = 1; i <= totalEps; i++) {
+      const epName = mockEpNames[(i-1) % mockEpNames.length] || "Macera Devam Ediyor";
+      epsHTML += `<button class="ep-btn" data-ep="${i}">Bölüm ${i}: ${epName}</button>`;
+    }
+    epList.innerHTML = epsHTML;
+
+    const epBtns = epList.querySelectorAll('.ep-btn');
+    epBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        setEpisode(parseInt(btn.dataset.ep));
+      });
+    });
+  };
+
+  const showSeasons = () => {
+    document.getElementById('sidebar-title').textContent = 'Sezonlar';
+    document.getElementById('back-to-seasons').style.display = 'none';
+    document.getElementById('episodes-list').style.display = 'none';
+    document.getElementById('next-ep-banner').style.display = 'none';
+    
+    // Reset player state (hide controls, show prompt)
+    currentEp = 0;
+    document.getElementById('player-meta').textContent = 'Sezon ve Bölüm Seçin';
+    document.querySelector('.player-controls').style.opacity = '0.3';
+    document.querySelector('.player-controls').style.pointerEvents = 'none';
+    document.querySelector('.video-play-icon').style.display = 'none';
+    document.querySelector('#video-anime-title').nextElementSibling.textContent = 'İzlemeye başlamak için lütfen sağ taraftan bir sezon ve bölüm seçin.';
+
+    const seasonsList = document.getElementById('seasons-list');
+    seasonsList.style.display = 'flex';
+    let seasonsHTML = '';
+    for (let i = 1; i <= totalSeasons; i++) {
+      seasonsHTML += `<button class="ep-btn season-btn" data-season="${i}">${i}. Sezon</button>`;
+    }
+    seasonsList.innerHTML = seasonsHTML;
+    
+    const seasonBtns = seasonsList.querySelectorAll('.season-btn');
+    seasonBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        showEpisodes(parseInt(btn.dataset.season));
+      });
+    });
+  };
+
+  document.getElementById('back-to-seasons').addEventListener('click', showSeasons);
+
+  const openPlayer = (title, epsCount = 12, seasonsCount = 3) => {
+    totalEps = epsCount;
+    totalSeasons = seasonsCount;
+    document.getElementById('player-title').textContent = title;
+    document.getElementById('video-anime-title').textContent = title;
+    
+    showSeasons();
+
+    playerModal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent scrolling
+  };
+
+  // Next / Prev buttons
+  const nextEpBtnBanner = document.getElementById('next-ep-btn');
+  if (nextEpBtnBanner) nextEpBtnBanner.addEventListener('click', () => setEpisode(currentEp + 1));
+  
+  const ctrlNextEp = document.getElementById('ctrl-next-ep');
+  if (ctrlNextEp) ctrlNextEp.addEventListener('click', () => setEpisode(currentEp + 1));
+  
+  const ctrlPrevEp = document.getElementById('ctrl-prev-ep');
+  if (ctrlPrevEp) ctrlPrevEp.addEventListener('click', () => setEpisode(currentEp - 1));
+
+  const closePlayer = () => {
+    playerModal.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  // Click on card to play
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.anime-card');
+    if (card && !e.target.closest('.card-add-btn')) {
+      const title = card.querySelector('.card-title').textContent;
+      // Get episode count if available from mock data
+      const animeId = parseInt(card.dataset.id);
+      const anime = animes.find(a => a.id === animeId);
+      const eps = anime ? anime.eps : 12;
+      openPlayer(title, eps);
+    }
+  });
+
+  // ─── RANDOM FEATURED ANIME ───
+  const setRandomFeatured = () => {
+    const randomAnime = animes[Math.floor(Math.random() * animes.length)];
+    
+    // Update DOM elements
+    const featuredImg = document.getElementById('featured-img');
+    const featuredTitle = document.getElementById('featured-title');
+    const featuredGenre = document.getElementById('featured-genre');
+    
+    if (featuredImg) featuredImg.src = randomAnime.img;
+    if (featuredTitle) featuredTitle.textContent = randomAnime.title;
+    if (featuredGenre) featuredGenre.textContent = randomAnime.genre;
+    
+    // Update Play buttons
+    const featuredBtn = document.getElementById('featured-play-btn');
+    const heroStartBtn = document.getElementById('hero-start-btn');
+    
+    const clickHandler = () => {
+      openPlayer(randomAnime.title, randomAnime.eps, randomAnime.eps > 12 ? 2 : 1);
+    };
+    
+    // Remove old listeners by cloning (quick way to reset listeners) if needed, 
+    // but here we just attach since it only runs once on load.
+    if (featuredBtn) {
+      featuredBtn.onclick = clickHandler;
+    }
+    if (heroStartBtn) {
+      heroStartBtn.onclick = clickHandler;
+    }
+  };
+  
+  setRandomFeatured();
+
+  if (playerClose) playerClose.addEventListener('click', closePlayer);
+  if (playerBackdrop) playerBackdrop.addEventListener('click', closePlayer);
+
+  // ─── LOGIN MODAL ───
+  const loginModal = document.getElementById('login-modal');
+  const loginBtn = document.getElementById('login-btn');
+  const loginClose = document.getElementById('login-close');
+  const loginForm = document.getElementById('login-form');
+
+  const openLogin = () => {
+    loginModal.classList.add('active');
+  };
+
+  const closeLogin = () => {
+    loginModal.classList.remove('active');
+  };
+
+  if (loginBtn) loginBtn.addEventListener('click', openLogin);
+  if (loginClose) loginClose.addEventListener('click', closeLogin);
+  
+  loginModal.addEventListener('click', (e) => {
+    if (e.target === loginModal) closeLogin();
+  });
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      closeLogin();
+      showToast('Hoş geldin!', '🌸');
+    });
+  }
+
+  // Google Login mock
+  const googleBtn = document.getElementById('google-login-btn');
+  if (googleBtn) {
+    googleBtn.addEventListener('click', () => {
+      closeLogin();
+      showToast('Google ile giriş yapıldı', '✨');
+    });
+  }
+
+  // ─── SEARCH OVERLAY ───
+  const searchOverlay = document.getElementById('search-overlay');
+  const searchToggle = document.getElementById('search-toggle-btn');
+  const searchClose = document.getElementById('search-close');
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  const openSearch = () => {
+    searchOverlay.classList.add('active');
+    setTimeout(() => searchInput.focus(), 100);
+  };
+
+  const closeSearch = () => {
+    searchOverlay.classList.remove('active');
+    searchInput.value = '';
+    searchResults.innerHTML = '';
+  };
+
+  if (searchToggle) searchToggle.addEventListener('click', openSearch);
+  if (searchClose) searchClose.addEventListener('click', closeSearch);
+
+  searchInput.addEventListener('input', (e) => {
+    const val = e.target.value.toLowerCase();
+    if (val.length < 2) {
+      searchResults.innerHTML = '';
+      return;
+    }
+    
+    const results = animes.filter(a => a.title.toLowerCase().includes(val));
+    if (results.length > 0) {
+      searchResults.innerHTML = results.map(createCard).join('');
+    } else {
+      searchResults.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: var(--text-muted)">Anime bulunamadı 🌸</p>';
+    }
+  });
+
+  // ─── LIST TABS ───
+  const tabs = document.querySelectorAll('.list-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      // Tab switching logic (mock)
+      const grid = document.getElementById('list-grid');
+      grid.innerHTML = `
+        <div class="list-empty">
+          <div class="empty-icon">🌸</div>
+          <p>${tab.textContent} listeniz şu an boş.<br/>Anime kartlarına tıklayarak ekleyebilirsiniz.</p>
+        </div>
+      `;
+    });
+  });
+
+  // ─── GENRE CHIPS ───
+  const genreChips = document.querySelectorAll('.genre-chip');
+  const popularRow = document.getElementById('popular-row');
+  const popularTitle = document.querySelector('#popular-section .section-title');
+
+  genreChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      genreChips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      
+      const selectedGenre = chip.dataset.genre;
+      
+      if (selectedGenre === 'all') {
+        if (popularTitle) popularTitle.textContent = 'Popüler Animeler';
+        if (popularRow) popularRow.innerHTML = animes.map(createCard).join('');
+      } else {
+        // Extract text content without emojis
+        const targetGenreText = chip.textContent.replace(/[\u{1F300}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA70}-\u{1FAFF}]/gu, '').trim(); 
+        
+        if (popularTitle) popularTitle.textContent = `${targetGenreText} Animeleri`;
+        
+        const filtered = animes.filter(a => a.genre.toLowerCase() === targetGenreText.toLowerCase());
+        
+        if (popularRow) {
+          if (filtered.length > 0) {
+            popularRow.innerHTML = filtered.map(createCard).join('');
+          } else {
+            popularRow.innerHTML = `<div style="padding: 2rem; width: 100%; text-align: center; color: var(--text-muted);">Bu türde anime bulunamadı 🌸</div>`;
+          }
+        }
+      }
+    });
+  });
+});
