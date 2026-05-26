@@ -84,6 +84,42 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  const createContinueCard = (anime) => {
+    return `
+      <div class="anime-card continue-card-item" data-id="${anime.id}" data-season="${anime.currentSeason}" data-ep="${anime.currentEp}" data-progress="${anime.progress}">
+        <div class="card-img-wrapper">
+          <img src="${anime.img}" alt="${anime.title}" class="card-img" loading="lazy" />
+          <div class="card-badge" style="background: var(--sakura-pink);">S:${anime.currentSeason} B:${anime.currentEp}</div>
+          <button class="card-add-btn" aria-label="Listeye Ekle">+</button>
+          <div class="card-overlay">
+            <span class="play-text">Devam Et</span>
+          </div>
+          <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 6px; background: rgba(0,0,0,0.5);">
+            <div style="height: 100%; width: ${anime.progress}%; background: var(--warm-heart-red); border-radius: 0 2px 2px 0;"></div>
+          </div>
+        </div>
+        <div class="card-info">
+          <h3 class="card-title">${anime.title}</h3>
+          <span class="card-meta">Kaldığın yerden devam et...</span>
+        </div>
+      </div>
+    `;
+  };
+
+  const continueAnimesData = [
+    { ...animes[4], progress: 65, currentSeason: 2, currentEp: 12 },
+    { ...animes[7], progress: 30, currentSeason: 1, currentEp: 4 },
+    { ...animes[2], progress: 90, currentSeason: 1, currentEp: 1 }
+  ];
+
+  const populateContinueRow = () => {
+    const row = document.getElementById('continue-row');
+    if (row) {
+      row.innerHTML = continueAnimesData.map(createContinueCard).join('');
+    }
+  };
+
+  populateContinueRow();
   populateRow('popular-row', animes);
   populateRow('new-row', [...animes].reverse());
   populateRow('rec-row', [...animes].sort(() => 0.5 - Math.random()));
@@ -107,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   };
 
+  setupCarousel('continue-prev', 'continue-next', 'continue-row');
   setupCarousel('popular-prev', 'popular-next', 'popular-row');
   setupCarousel('new-prev', 'new-next', 'new-row');
   setupCarousel('rec-prev', 'rec-next', 'rec-row');
@@ -150,6 +187,39 @@ document.addEventListener('DOMContentLoaded', () => {
   let totalSeasons = 3;
   const mockEpNames = ["Yeni Başlangıç", "Gizli Güç", "Karanlık Gece", "Umut Işığı", "Beklenmedik Misafir", "Sonsuz Yolculuk", "Geçmişin İzleri", "Büyük Savaş", "Kayıp Şehir", "Yeniden Doğuş", "Son Karar", "Barış Zamanı"];
 
+  // ─── TEST VİDEO URL'LERİ ───
+  const testVideos = [
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+    'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
+  ];
+
+  const getRandomVideo = () => testVideos[Math.floor(Math.random() * testVideos.length)];
+
+  const loadVideoIntoPlayer = (videoSrc) => {
+    const wrapper = document.querySelector('.video-wrapper');
+    if (!wrapper) return;
+
+    // Önceki video varsa kaldır
+    const existing = wrapper.querySelector('video');
+    if (existing) existing.remove();
+
+    // Placeholder'ı gizle
+    const placeholder = document.getElementById('video-placeholder');
+    if (placeholder) placeholder.style.display = 'none';
+
+    // Video elementi oluştur
+    const video = document.createElement('video');
+    video.src = videoSrc;
+    video.controls = true;
+    video.autoplay = true;
+    video.style.cssText = 'width:100%;height:100%;object-fit:contain;background:#000;border-radius:12px;display:block;';
+    video.preload = 'metadata';
+    wrapper.appendChild(video);
+  };
+
   const setEpisode = (ep) => {
     if (ep < 1 || ep > totalEps) return;
     currentEp = ep;
@@ -160,6 +230,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (activeBtn) activeBtn.classList.add('active');
     
     document.getElementById('player-meta').textContent = `Sezon ${currentSeason} · Bölüm ${ep} · HD`;
+
+    // Rastgele test videosu yükle
+    loadVideoIntoPlayer(getRandomVideo());
     
     // Show player controls and play icon
     document.querySelector('.player-controls').style.opacity = '1';
@@ -215,6 +288,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelector('.video-play-icon').style.display = 'none';
     document.querySelector('#video-anime-title').nextElementSibling.textContent = 'İzlemeye başlamak için lütfen sağ taraftan bir sezon ve bölüm seçin.';
 
+    // Videoyu kaldır, placeholder'ı geri getir
+    const video = document.querySelector('.video-wrapper video');
+    if (video) { video.pause(); video.remove(); }
+    const placeholder = document.getElementById('video-placeholder');
+    if (placeholder) placeholder.style.display = '';
+
     const seasonsList = document.getElementById('seasons-list');
     seasonsList.style.display = 'flex';
     let seasonsHTML = '';
@@ -258,6 +337,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const closePlayer = () => {
     playerModal.classList.remove('active');
     document.body.style.overflow = '';
+    // Videoyu durdur ve kaldır
+    const video = document.querySelector('.video-wrapper video');
+    if (video) { video.pause(); video.remove(); }
+    const placeholder = document.getElementById('video-placeholder');
+    if (placeholder) placeholder.style.display = '';
   };
 
   // Click on card to play
