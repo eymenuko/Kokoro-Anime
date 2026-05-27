@@ -212,6 +212,7 @@
           </div>
         </div>
         <div class="video-wrapper">
+          <video id="player-video" class="player-video" style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;" controls playsinline></video>
           <div class="video-placeholder" id="video-placeholder">
             <div class="video-overlay-text">
               <div class="video-play-icon">
@@ -225,11 +226,11 @@
         <div class="player-controls">
           <div class="progress-bar-wrapper">
             <div class="progress-bar" id="progress-bar">
-              <div class="progress-fill" id="progress-fill" style="width:35%"></div>
-              <div class="progress-thumb" style="left:35%"></div>
+              <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+              <div class="progress-thumb" id="progress-thumb" style="left:0%"></div>
             </div>
-            <span class="time-current">13:45</span>
-            <span class="time-total">1:32:00</span>
+            <span class="time-current" id="time-current">00:00</span>
+            <span class="time-total" id="time-total">00:00</span>
           </div>
           <div class="controls-row">
             <button class="ctrl-btn" id="ctrl-play" aria-label="Oynat/Durdur">
