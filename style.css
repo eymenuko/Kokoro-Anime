@@ -220,6 +220,54 @@ h1, h2, h3, h4 {
   background-color: #d85a6a;
 }
 
+/* ─── USER MENU (Giriş yapılmışsa) ─── */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(246, 183, 193, 0.15);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-round);
+  padding: 0.3rem 0.8rem 0.3rem 0.4rem;
+  backdrop-filter: blur(4px);
+}
+
+.user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sakura-pink), var(--warm-heart-red));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.user-email {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.logout-btn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--warm-heart-red);
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-round);
+  border: 1px solid var(--warm-heart-red);
+  transition: var(--transition-fast);
+}
+
+.logout-btn:hover {
+  background: var(--warm-heart-red);
+  color: white;
+}
+
 .hamburger {
   display: none;
   flex-direction: column;

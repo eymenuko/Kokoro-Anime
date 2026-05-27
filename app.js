@@ -1,3 +1,9 @@
+// ─── SUPABASE CLIENT ───
+const SUPABASE_URL = 'https://kycfoaamhvmerunslumz.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_MixEk_2y7e8Lcmi0j78PtQ_6Pkcf21v';
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 document.addEventListener('DOMContentLoaded', () => {
   // ─── NAVBAR SCROLL ───
   const navbar = document.getElementById('navbar');
@@ -458,43 +464,135 @@ document.addEventListener('DOMContentLoaded', () => {
   if (playerClose) playerClose.addEventListener('click', closePlayer);
   if (playerBackdrop) playerBackdrop.addEventListener('click', closePlayer);
 
-  // ─── LOGIN MODAL ───
+  // ─── LOGIN / REGISTER MODAL (Supabase) ───
   const loginModal = document.getElementById('login-modal');
   const loginBtn = document.getElementById('login-btn');
   const loginClose = document.getElementById('login-close');
   const loginForm = document.getElementById('login-form');
+  const loginSubmitBtn = document.getElementById('login-submit-btn');
+  const modalTitle = document.getElementById('modal-title');
+  const modalSub = document.getElementById('modal-sub');
+  const modalSwitchText = document.getElementById('modal-switch-text');
+  const switchToRegister = document.getElementById('switch-to-register');
+  const nameGroup = document.getElementById('name-group');
+  const nameInput = document.getElementById('name-input');
+  const emailInput = document.getElementById('email-input');
+  const passwordInput = document.getElementById('password-input');
+  const loginMenuBtn = document.getElementById('login-btn');
+  const userMenu = document.getElementById('user-menu');
+  const userEmailDisplay = document.getElementById('user-email-display');
+  const logoutBtn = document.getElementById('logout-btn');
+
+  let isRegisterMode = false;
+
+  const setMode = (register) => {
+    isRegisterMode = register;
+    if (register) {
+      modalTitle.textContent = 'Hesap Oluştur 🌸';
+      modalSub.textContent = 'Kokoro Anime dünyasına katıl!';
+      loginSubmitBtn.textContent = 'Kayıt Ol';
+      nameGroup.style.display = 'block';
+      modalSwitchText.innerHTML = 'Zaten hesabın var mı? <a href="#" id="switch-to-register">Giriş Yap</a>';
+    } else {
+      modalTitle.textContent = 'Hoş Geldin 🌸';
+      modalSub.textContent = 'İzleme geçmişin ve listelerini kaydet';
+      loginSubmitBtn.textContent = 'Giriş Yap';
+      nameGroup.style.display = 'none';
+      modalSwitchText.innerHTML = 'Hesabın yok mu? <a href="#" id="switch-to-register">Kayıt Ol</a>';
+    }
+    // Yeni link için tekrar event ekle
+    document.getElementById('switch-to-register')?.addEventListener('click', (e) => {
+      e.preventDefault();
+      setMode(!isRegisterMode);
+    });
+  };
 
   const openLogin = () => {
+    setMode(false);
     loginModal.classList.add('active');
   };
 
   const closeLogin = () => {
     loginModal.classList.remove('active');
+    if (loginForm) loginForm.reset();
   };
+
+  const updateNavbar = (user) => {
+    if (user) {
+      loginMenuBtn.style.display = 'none';
+      userMenu.style.display = 'flex';
+      const email = user.email || '';
+      userEmailDisplay.textContent = email.split('@')[0]; // Sadece kullanıcı adını göster
+    } else {
+      loginMenuBtn.style.display = 'block';
+      userMenu.style.display = 'none';
+    }
+  };
+
+  // Auth state değişimini dinle (sayfa yüklendiğinde de çalışır)
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    updateNavbar(session?.user ?? null);
+  });
 
   if (loginBtn) loginBtn.addEventListener('click', openLogin);
   if (loginClose) loginClose.addEventListener('click', closeLogin);
-  
   loginModal.addEventListener('click', (e) => {
     if (e.target === loginModal) closeLogin();
   });
 
-  if (loginForm) {
-    loginForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      closeLogin();
-      showToast('Hoş geldin!', '🌸');
+  // Çıkış
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      await supabaseClient.auth.signOut();
+      showToast('Güvenle çıkış yapıldı!', '🌸');
     });
   }
 
-  // Google Login mock
-  const googleBtn = document.getElementById('google-login-btn');
-  if (googleBtn) {
-    googleBtn.addEventListener('click', () => {
-      closeLogin();
-      showToast('Google ile giriş yapıldı', '✨');
+  // Form gönder
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      const name = nameInput ? nameInput.value.trim() : '';
+
+      if (!email || !password) {
+        showToast('E-posta ve şifre girin!', '⚠️');
+        return;
+      }
+
+      loginSubmitBtn.disabled = true;
+      loginSubmitBtn.textContent = isRegisterMode ? 'Kayıt oluyor...' : 'Giriş yapılıyor...';
+
+      if (isRegisterMode) {
+        const { error } = await supabaseClient.auth.signUp({
+          email,
+          password,
+          options: { data: { username: name } }
+        });
+        if (error) {
+          showToast(error.message, '❌');
+        } else {
+          showToast('Kayıt başarılı! Lütfen e-posta adresini doğrula 📧', '🌸');
+          closeLogin();
+        }
+      } else {
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if (error) {
+          showToast('Hatalı e-posta veya şifre!', '❌');
+        } else {
+          showToast('Hoş geldin! 🌸', '✨');
+          closeLogin();
+        }
+      }
+
+      loginSubmitBtn.disabled = false;
+      loginSubmitBtn.textContent = isRegisterMode ? 'Kayıt Ol' : 'Giriş Yap';
     });
   }
+
+  // İlk mod ayarı
+  setMode(false);
 
   // ─── SEARCH OVERLAY ───
   const searchOverlay = document.getElementById('search-overlay');

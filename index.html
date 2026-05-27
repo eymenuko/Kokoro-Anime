@@ -30,7 +30,14 @@
         <button class="search-btn" id="search-toggle-btn" aria-label="Ara">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
-        <button class="login-btn" id="login-btn">Giriş Yap</button>
+        <!-- Giriş yapılmamışsa -->
+        <button class="login-btn" id="login-btn" style="display:block">Giriş Yap</button>
+        <!-- Giriş yapılmışsa -->
+        <div class="user-menu" id="user-menu" style="display:none">
+          <div class="user-avatar" id="user-avatar">🌸</div>
+          <span class="user-email" id="user-email-display"></span>
+          <button class="logout-btn" id="logout-btn">Çıkış</button>
+        </div>
       </div>
       <button class="hamburger" id="hamburger" aria-label="Menü">
         <span></span><span></span><span></span>
@@ -273,9 +280,14 @@
         <span class="logo-kanji small">心</span>
         <span>Kokoro Anime</span>
       </div>
-      <h2 class="modal-title">Hoş Geldin 🌸</h2>
-      <p class="modal-sub">İzleme geçmişin ve listelerini kaydet</p>
+      <h2 class="modal-title" id="modal-title">Hoş Geldin 🌸</h2>
+      <p class="modal-sub" id="modal-sub">İzleme geçmişin ve listelerini kaydet</p>
       <form class="login-form" id="login-form">
+        <!-- Sadece Kayıt Ol modunda görünür -->
+        <div class="form-group" id="name-group" style="display:none">
+          <label for="name-input">Kullanıcı Adı</label>
+          <input type="text" id="name-input" placeholder="Adın" autocomplete="nickname" />
+        </div>
         <div class="form-group">
           <label for="email-input">E-posta</label>
           <input type="email" id="email-input" placeholder="ornek@email.com" autocomplete="email" />
@@ -286,12 +298,7 @@
         </div>
         <button type="submit" class="btn-primary full-width" id="login-submit-btn">Giriş Yap</button>
       </form>
-      <p class="modal-switch">Hesabın yok mu? <a href="#" id="switch-to-register">Kayıt Ol</a></p>
-      <div class="or-divider"><span>veya</span></div>
-      <button class="google-btn" id="google-login-btn">
-        <svg viewBox="0 0 24 24" width="20"><path fill="#EA4335" d="M5.26 9.77A7.49 7.49 0 0 1 12 4.5c1.8 0 3.43.64 4.7 1.69l3.5-3.5A12 12 0 0 0 12 0C7.31 0 3.25 2.7 1.28 6.65l3.98 3.12z"/><path fill="#34A853" d="M16.04 18.01A7.47 7.47 0 0 1 12 19.5a7.49 7.49 0 0 1-6.72-4.24l-3.98 3.1A12 12 0 0 0 12 24c3.24 0 6.17-1.18 8.42-3.12l-4.38-2.87z"/><path fill="#4A90D9" d="M20.42 20.88A11.96 11.96 0 0 0 24 12c0-.77-.07-1.52-.2-2.25H12v4.5h6.88a5.86 5.86 0 0 1-2.46 3.76l4 2.87z"/><path fill="#FBBC05" d="M5.28 14.26A7.47 7.47 0 0 1 4.5 12c0-.8.14-1.58.38-2.31L.9 6.57A11.96 11.96 0 0 0 0 12c0 1.93.46 3.76 1.28 5.38l3.98-3.12z"/></svg>
-        Google ile Devam Et
-      </button>
+      <p class="modal-switch" id="modal-switch-text">Hesabın yok mu? <a href="#" id="switch-to-register">Kayıt Ol</a></p>
     </div>
   </div>
 
@@ -341,6 +348,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
 </html>
