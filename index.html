@@ -36,6 +36,9 @@
         <div class="user-menu" id="user-menu" style="display:none">
           <div class="user-avatar" id="user-avatar">🌸</div>
           <span class="user-email" id="user-email-display"></span>
+          <button class="admin-panel-btn" id="admin-panel-btn" style="display:none" aria-label="Admin Paneli">
+            ⚙️ Admin
+          </button>
           <button class="logout-btn" id="logout-btn">Çıkış</button>
         </div>
       </div>
@@ -299,6 +302,82 @@
         <button type="submit" class="btn-primary full-width" id="login-submit-btn">Giriş Yap</button>
       </form>
       <p class="modal-switch" id="modal-switch-text">Hesabın yok mu? <a href="#" id="switch-to-register">Kayıt Ol</a></p>
+    </div>
+  </div>
+
+  <!-- ─── ADMIN PANEL MODAL ─── -->
+  <div class="modal-overlay" id="admin-modal">
+    <div class="modal-card admin-card" id="admin-card">
+      <button class="modal-close" id="admin-close" aria-label="Kapat">✕</button>
+      <div class="modal-logo">
+        <span style="font-size:1.5rem">⚙️</span>
+        <span>Admin Paneli</span>
+      </div>
+      <h2 class="modal-title">Anime Yönetimi</h2>
+      <p class="modal-sub">Yeni anime ve bölüm ekle, video linki ayarla</p>
+
+      <!-- Sekmeler -->
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-tab="add-anime" id="tab-add-anime">Anime Ekle</button>
+        <button class="admin-tab" data-tab="add-episode" id="tab-add-episode">Bölüm / Video Ekle</button>
+      </div>
+
+      <!-- Anime Ekle Formu -->
+      <div id="admin-tab-add-anime" class="admin-tab-content">
+        <form id="add-anime-form">
+          <div class="form-group">
+            <label for="anime-title-input">Anime Adı</label>
+            <input type="text" id="anime-title-input" placeholder="örn: Attack on Titan" required />
+          </div>
+          <div class="form-group">
+            <label for="anime-genre-input">Tür</label>
+            <select id="anime-genre-input">
+              <option value="Aksiyon">Aksiyon</option>
+              <option value="Romantik">Romantik</option>
+              <option value="Drama">Drama</option>
+              <option value="Fantezi">Fantezi</option>
+              <option value="Komedi">Komedi</option>
+              <option value="Slice of Life">Slice of Life</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="anime-img-input">Kapak Görsel URL</label>
+            <input type="url" id="anime-img-input" placeholder="https://..." />
+          </div>
+          <div class="form-group">
+            <label for="anime-seasons-input">Sezon Sayısı</label>
+            <input type="number" id="anime-seasons-input" value="1" min="1" />
+          </div>
+          <button type="submit" class="btn-primary full-width" id="add-anime-submit">Anime Ekle</button>
+        </form>
+      </div>
+
+      <!-- Bölüm / Video Ekle Formu -->
+      <div id="admin-tab-add-episode" class="admin-tab-content" style="display:none">
+        <form id="add-episode-form">
+          <div class="form-group">
+            <label for="ep-anime-select">Anime Seç</label>
+            <select id="ep-anime-select"><option>Yükleniyor...</option></select>
+          </div>
+          <div class="form-group">
+            <label for="ep-season-input">Sezon No</label>
+            <input type="number" id="ep-season-input" value="1" min="1" />
+          </div>
+          <div class="form-group">
+            <label for="ep-number-input">Bölüm No</label>
+            <input type="number" id="ep-number-input" value="1" min="1" />
+          </div>
+          <div class="form-group">
+            <label for="ep-name-input">Bölüm Adı</label>
+            <input type="text" id="ep-name-input" placeholder="örn: Yeni Başlangıç" required />
+          </div>
+          <div class="form-group">
+            <label for="ep-video-input">Video URL (Tau Video / Embed Link)</label>
+            <input type="url" id="ep-video-input" placeholder="https://tau.video/embed/..." required />
+          </div>
+          <button type="submit" class="btn-primary full-width" id="add-episode-submit">Bölüm Ekle</button>
+        </form>
+      </div>
     </div>
   </div>
 

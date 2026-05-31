@@ -517,15 +517,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) loginForm.reset();
   };
 
-  const updateNavbar = (user) => {
+  const updateNavbar = async (user) => {
     if (user) {
       loginMenuBtn.style.display = 'none';
       userMenu.style.display = 'flex';
       const email = user.email || '';
-      userEmailDisplay.textContent = email.split('@')[0]; // Sadece kullanıcı adını göster
+      userEmailDisplay.textContent = email.split('@')[0];
+
+      // Admin rolünü kontrol et
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      const adminBtn = document.getElementById('admin-panel-btn');
+      if (profile?.role === 'admin') {
+        if (adminBtn) adminBtn.style.display = 'inline-flex';
+        window._isAdmin = true;
+      } else {
+        if (adminBtn) adminBtn.style.display = 'none';
+        window._isAdmin = false;
+      }
     } else {
       loginMenuBtn.style.display = 'block';
       userMenu.style.display = 'none';
+      window._isAdmin = false;
+      const adminBtn = document.getElementById('admin-panel-btn');
+      if (adminBtn) adminBtn.style.display = 'none';
     }
   };
 
@@ -680,4 +699,110 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+  // ─── ADMIN PANEL ───
+  const adminModal = document.getElementById('admin-modal');
+  const adminPanelBtn = document.getElementById('admin-panel-btn');
+  const adminClose = document.getElementById('admin-close');
+
+  const openAdminPanel = async () => {
+    adminModal.classList.add('active');
+    await loadAnimesForSelect();
+  };
+
+  const closeAdminPanel = () => {
+    adminModal.classList.remove('active');
+  };
+
+  if (adminPanelBtn) adminPanelBtn.addEventListener('click', openAdminPanel);
+  if (adminClose) adminClose.addEventListener('click', closeAdminPanel);
+  if (adminModal) adminModal.addEventListener('click', (e) => {
+    if (e.target === adminModal) closeAdminPanel();
+  });
+
+  // Sekme geçişi
+  const adminTabBtns = document.querySelectorAll('.admin-tab');
+  adminTabBtns.forEach(tab => {
+    tab.addEventListener('click', () => {
+      adminTabBtns.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.admin-tab-content').forEach(c => c.style.display = 'none');
+      document.getElementById(`admin-tab-${tab.dataset.tab}`).style.display = 'block';
+    });
+  });
+
+  // Anime listesini select'e yükle
+  const loadAnimesForSelect = async () => {
+    const { data, error } = await supabaseClient.from('animes').select('id, title').order('title');
+    const select = document.getElementById('ep-anime-select');
+    if (!select) return;
+    if (error || !data?.length) {
+      select.innerHTML = '<option value="">Önce anime ekleyin</option>';
+      return;
+    }
+    select.innerHTML = data.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
+  };
+
+  // Anime Ekle Formu
+  const addAnimeForm = document.getElementById('add-anime-form');
+  if (addAnimeForm) {
+    addAnimeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const title = document.getElementById('anime-title-input').value.trim();
+      const genre = document.getElementById('anime-genre-input').value;
+      const img = document.getElementById('anime-img-input').value.trim();
+      const seasons = parseInt(document.getElementById('anime-seasons-input').value);
+
+      const submitBtn = document.getElementById('add-anime-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Ekleniyor...';
+
+      const { error } = await supabaseClient.from('animes').insert({
+        title, genre, img, seasons, created_at: new Date().toISOString()
+      });
+
+      if (error) {
+        showToast('Hata: ' + error.message, '❌');
+      } else {
+        showToast(`"${title}" eklendi! 🎌`, '✨');
+        addAnimeForm.reset();
+        await loadAnimesForSelect();
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Anime Ekle';
+    });
+  }
+
+  // Bölüm / Video Ekle Formu
+  const addEpisodeForm = document.getElementById('add-episode-form');
+  if (addEpisodeForm) {
+    addEpisodeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const animeId = document.getElementById('ep-anime-select').value;
+      const season = parseInt(document.getElementById('ep-season-input').value);
+      const episode = parseInt(document.getElementById('ep-number-input').value);
+      const name = document.getElementById('ep-name-input').value.trim();
+      const videoUrl = document.getElementById('ep-video-input').value.trim();
+
+      const submitBtn = document.getElementById('add-episode-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Ekleniyor...';
+
+      const { error } = await supabaseClient.from('episodes').insert({
+        anime_id: animeId, season, episode, name, video_url: videoUrl,
+        created_at: new Date().toISOString()
+      });
+
+      if (error) {
+        showToast('Hata: ' + error.message, '❌');
+      } else {
+        showToast(`S${season} B${episode} eklendi! 🎬`, '✨');
+        addEpisodeForm.reset();
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Bölüm Ekle';
+    });
+  }
 });

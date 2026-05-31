@@ -268,6 +268,81 @@ h1, h2, h3, h4 {
   color: white;
 }
 
+/* ─── ADMIN PANEL BUTTON ─── */
+.admin-panel-btn {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: white;
+  padding: 0.2rem 0.7rem;
+  border-radius: var(--radius-round);
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  border: none;
+  transition: var(--transition-fast);
+  cursor: pointer;
+}
+
+.admin-panel-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
+}
+
+/* ─── ADMIN MODAL ─── */
+.admin-card {
+  max-width: 560px;
+  width: 95%;
+  text-align: left;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.admin-tabs {
+  display: flex;
+  gap: 0;
+  margin: 1.2rem 0;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--light-gray-pink);
+}
+
+.admin-tab {
+  flex: 1;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: white;
+  border: none;
+  transition: var(--transition-fast);
+  cursor: pointer;
+}
+
+.admin-tab.active {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: white;
+}
+
+.admin-tab-content {
+  margin-top: 0.5rem;
+}
+
+.admin-tab-content select {
+  width: 100%;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 1rem;
+  background: var(--milky-white);
+  color: var(--text-main);
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.admin-tab-content select:focus {
+  border-color: #a855f7;
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.15);
+}
+
 .hamburger {
   display: none;
   flex-direction: column;
