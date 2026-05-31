@@ -213,58 +213,86 @@ document.addEventListener('DOMContentLoaded', () => {
   const playerBackdrop = document.getElementById('player-backdrop');
   
   let currentEp = 0;
-  let totalEps = 12;
   let currentSeason = 1;
-  let totalSeasons = 3;
-  const mockEpNames = ["Yeni Başlangıç", "Gizli Güç", "Karanlık Gece", "Umut Işığı", "Beklenmedik Misafir", "Sonsuz Yolculuk", "Geçmişin İzleri", "Büyük Savaş", "Kayıp Şehir", "Yeniden Doğuş", "Son Karar", "Barış Zamanı"];
+  let currentEpisodesData = []; // Veritabanından gelen bölümler
+  let currentSeasonsList = []; // [1, 2, 3] gibi mevcut sezonlar
+  let isMockAnime = true;
 
-  const setEpisode = (ep) => {
-    if (ep < 1 || ep > totalEps) return;
-    currentEp = ep;
+  const setEpisode = (epNumber) => {
+    currentEp = epNumber;
     const epBtns = document.querySelectorAll('.ep-btn');
     epBtns.forEach(b => b.classList.remove('active'));
     
-    const activeBtn = Array.from(epBtns).find(b => parseInt(b.dataset.ep) === ep);
+    const activeBtn = Array.from(epBtns).find(b => parseInt(b.dataset.ep) === currentEp);
     if (activeBtn) activeBtn.classList.add('active');
     
-    document.getElementById('player-meta').textContent = `Sezon ${currentSeason} · Bölüm ${ep} · HD`;
-    
-    // Show player controls and play icon
-    document.querySelector('.player-controls').style.opacity = '1';
-    document.querySelector('.player-controls').style.pointerEvents = 'auto';
+    document.getElementById('player-meta').textContent = `Sezon ${currentSeason} · Bölüm ${currentEp} · HD`;
     
     const playerVideo = document.getElementById('player-video');
+    const playerIframe = document.getElementById('player-iframe');
     const videoPlaceholder = document.getElementById('video-placeholder');
-    if (playerVideo && videoPlaceholder) {
-      videoPlaceholder.style.display = 'none';
-      playerVideo.style.display = 'block';
-      const sampleVideos = [
-        "https://www.w3schools.com/html/mov_bbb.mp4",
-        "https://media.w3.org/2010/05/sintel/trailer.mp4"
-      ];
-      playerVideo.src = sampleVideos[Math.floor(Math.random() * sampleVideos.length)];
-      
-      const playPromise = playerVideo.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(e => {
-          console.log("Auto-play prevented", e);
+    const playerControls = document.querySelector('.player-controls');
+
+    if (videoPlaceholder) videoPlaceholder.style.display = 'none';
+
+    // Bölüm URL'sini belirle
+    let videoUrl = "";
+    let epName = "Bölüm";
+    let hasNext = false;
+    let nextEpName = "Sonraki Bölüm";
+
+    if (isMockAnime) {
+      const mockEpNames = ["Yeni Başlangıç", "Gizli Güç", "Karanlık Gece", "Umut Işığı"];
+      videoUrl = "https://www.w3schools.com/html/mov_bbb.mp4";
+      epName = mockEpNames[(epNumber-1) % mockEpNames.length];
+      hasNext = epNumber < 12;
+      nextEpName = mockEpNames[epNumber % mockEpNames.length];
+    } else {
+      const epData = currentEpisodesData.find(e => e.season === currentSeason && e.episode === epNumber);
+      if (epData) {
+        videoUrl = epData.video_url;
+        epName = epData.name;
+        const nextEpData = currentEpisodesData.find(e => e.season === currentSeason && e.episode === epNumber + 1);
+        if (nextEpData) {
+          hasNext = true;
+          nextEpName = nextEpData.name || "Sonraki Bölüm";
+        }
+      }
+    }
+
+    // Embed (iframe) mi yoksa normal MP4 mü?
+    if (videoUrl.endsWith('.mp4') || videoUrl.endsWith('.webm') || isMockAnime) {
+      if (playerIframe) playerIframe.style.display = 'none';
+      if (playerVideo) {
+        playerVideo.style.display = 'block';
+        playerVideo.src = videoUrl;
+        playerControls.style.opacity = '1';
+        playerControls.style.pointerEvents = 'auto';
+        playerVideo.play().catch(e => {
           playerVideo.muted = true;
           playerVideo.play();
         });
       }
-      
-      const ctrlPlay = document.getElementById('ctrl-play');
-      if (ctrlPlay) {
-        ctrlPlay.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>`;
+    } else {
+      // Üçüncü parti sağlayıcı (Tau Video vb.)
+      if (playerVideo) {
+        playerVideo.style.display = 'none';
+        playerVideo.pause();
       }
+      if (playerIframe) {
+        playerIframe.style.display = 'block';
+        playerIframe.src = videoUrl;
+      }
+      // Iframe'in kendi kontrolleri olduğu için bizimkileri gizle
+      playerControls.style.opacity = '0';
+      playerControls.style.pointerEvents = 'none';
     }
     
     // Update next episode banner
     const nextBanner = document.getElementById('next-ep-banner');
-    if (ep < totalEps) {
+    if (hasNext) {
       nextBanner.style.display = 'flex';
-      const nextName = mockEpNames[(ep) % mockEpNames.length] || "Sıradaki Macera";
-      document.getElementById('next-ep-title').textContent = `Bölüm ${ep + 1}: ${nextName}`;
+      document.getElementById('next-ep-title').textContent = `Bölüm ${currentEp + 1}: ${nextEpName}`;
     } else {
       nextBanner.style.display = 'none';
     }
@@ -279,10 +307,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const epList = document.getElementById('episodes-list');
     epList.style.display = 'flex';
     let epsHTML = '';
-    for (let i = 1; i <= totalEps; i++) {
-      const epName = mockEpNames[(i-1) % mockEpNames.length] || "Macera Devam Ediyor";
-      epsHTML += `<button class="ep-btn" data-ep="${i}">Bölüm ${i}: ${epName}</button>`;
+
+    if (isMockAnime) {
+      for (let i = 1; i <= 12; i++) {
+        epsHTML += `<button class="ep-btn" data-ep="${i}">Bölüm ${i}</button>`;
+      }
+    } else {
+      const seasonEps = currentEpisodesData.filter(e => e.season === season);
+      if (seasonEps.length === 0) {
+        epsHTML = `<div style="padding:1rem; text-align:center; color:var(--text-muted);">Henüz bölüm eklenmemiş</div>`;
+      } else {
+        seasonEps.forEach(ep => {
+          epsHTML += `<button class="ep-btn" data-ep="${ep.episode}">Bölüm ${ep.episode}: ${ep.name || ''}</button>`;
+        });
+      }
     }
+
     epList.innerHTML = epsHTML;
 
     const epBtns = epList.querySelectorAll('.ep-btn');
@@ -299,16 +339,18 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('episodes-list').style.display = 'none';
     document.getElementById('next-ep-banner').style.display = 'none';
     
-    // Reset player state (hide controls, show prompt)
     currentEp = 0;
     document.getElementById('player-meta').textContent = 'Sezon ve Bölüm Seçin';
     document.querySelector('.player-controls').style.opacity = '0.3';
     document.querySelector('.player-controls').style.pointerEvents = 'none';
     
     const playerVideo = document.getElementById('player-video');
+    const playerIframe = document.getElementById('player-iframe');
     const videoPlaceholder = document.getElementById('video-placeholder');
-    if (playerVideo && videoPlaceholder) {
+    if (playerVideo && playerIframe && videoPlaceholder) {
       playerVideo.style.display = 'none';
+      playerIframe.style.display = 'none';
+      playerIframe.src = '';
       playerVideo.pause();
       videoPlaceholder.style.display = 'flex';
       document.querySelector('.video-play-icon').style.display = 'none';
@@ -318,9 +360,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const seasonsList = document.getElementById('seasons-list');
     seasonsList.style.display = 'flex';
     let seasonsHTML = '';
-    for (let i = 1; i <= totalSeasons; i++) {
-      seasonsHTML += `<button class="ep-btn season-btn" data-season="${i}">${i}. Sezon</button>`;
+
+    if (isMockAnime) {
+      for (let i = 1; i <= 3; i++) {
+        seasonsHTML += `<button class="ep-btn season-btn" data-season="${i}">${i}. Sezon</button>`;
+      }
+    } else {
+      if (currentSeasonsList.length === 0) {
+        seasonsHTML = `<div style="padding:1rem; text-align:center; color:var(--text-muted);">Henüz sezon eklenmemiş</div>`;
+      } else {
+        currentSeasonsList.forEach(s => {
+          seasonsHTML += `<button class="ep-btn season-btn" data-season="${s}">${s}. Sezon</button>`;
+        });
+      }
     }
+    
     seasonsList.innerHTML = seasonsHTML;
     
     const seasonBtns = seasonsList.querySelectorAll('.season-btn');
@@ -333,11 +387,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('back-to-seasons').addEventListener('click', showSeasons);
 
-  const openPlayer = (title, epsCount = 12, seasonsCount = 3, resumeSeason = null, resumeEp = null) => {
-    totalEps = epsCount;
-    totalSeasons = seasonsCount;
+  const openPlayer = async (animeIdStr, title, resumeSeason = null, resumeEp = null) => {
     document.getElementById('player-title').textContent = title;
     document.getElementById('video-anime-title').textContent = title;
+    
+    // Mock mu gerçek mi kontrol et (UUID formatı uzundur)
+    isMockAnime = !animeIdStr || (animeIdStr.length < 10 && !isNaN(animeIdStr));
+    
+    if (!isMockAnime) {
+      const { data, error } = await supabaseClient
+        .from('episodes')
+        .select('*')
+        .eq('anime_id', animeIdStr)
+        .order('season', { ascending: true })
+        .order('episode', { ascending: true });
+        
+      if (!error && data) {
+        currentEpisodesData = data;
+        currentSeasonsList = [...new Set(data.map(e => e.season))];
+      }
+    }
     
     if (resumeSeason && resumeEp) {
       showSeasons();
@@ -345,10 +414,14 @@ document.addEventListener('DOMContentLoaded', () => {
       setEpisode(resumeEp);
     } else {
       showSeasons();
+      // Eğer sadece tek sezon varsa otomatik olarak bölümleri aç
+      if (!isMockAnime && currentSeasonsList.length === 1) {
+        showEpisodes(currentSeasonsList[0]);
+      }
     }
 
     playerModal.classList.add('active');
-    document.body.style.overflow = 'hidden'; // Prevent scrolling
+    document.body.style.overflow = 'hidden'; 
   };
 
   // Next / Prev buttons
@@ -437,10 +510,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = e.target.closest('.anime-card');
     if (card && !e.target.closest('.card-add-btn')) {
       const title = card.querySelector('.card-title').textContent;
-      // Get episode count if available from mock data
-      const animeId = parseInt(card.dataset.id);
-      const anime = animes.find(a => a.id === animeId);
-      const eps = anime ? anime.eps : 12;
+      const animeIdStr = card.dataset.id; // Artık string alıyoruz (UUID için)
       
       let resumeSeason = null;
       let resumeEp = null;
@@ -449,7 +519,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resumeEp = parseInt(card.dataset.ep);
       }
       
-      openPlayer(title, eps, eps > 12 ? 2 : 1, resumeSeason, resumeEp);
+      openPlayer(animeIdStr, title, resumeSeason, resumeEp);
     }
   });
 
