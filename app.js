@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── MOCK DATA ───
-  const animes = [
+  let animes = [
     { id: 1, title: 'Your Name', genre: 'Romantik', img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', eps: 1 },
     { id: 2, title: 'Spirited Away', genre: 'Fantezi', img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&h=600&fit=crop', eps: 1 },
     { id: 3, title: 'A Silent Voice', genre: 'Drama', img: 'https://images.unsplash.com/photo-1580477655166-51f7bb980d9a?w=400&h=600&fit=crop', eps: 1 },
@@ -129,6 +129,31 @@ document.addEventListener('DOMContentLoaded', () => {
   populateRow('popular-row', animes);
   populateRow('new-row', [...animes].reverse());
   populateRow('rec-row', [...animes].sort(() => 0.5 - Math.random()));
+
+  // ─── FETCH FROM SUPABASE ───
+  const loadRealAnimes = async () => {
+    try {
+      const { data, error } = await supabaseClient.from('animes').select('*').order('created_at', { ascending: false });
+      if (!error && data && data.length > 0) {
+        const realAnimes = data.map(a => ({
+          id: a.id,
+          title: a.title,
+          genre: a.genre || 'Diğer',
+          img: a.img || 'https://via.placeholder.com/400x600?text=Kapak+Yok',
+          eps: (a.seasons * 12) + '?' // Şimdilik yaklaşık bölüm sayısı
+        }));
+        
+        animes = [...realAnimes, ...animes];
+        
+        populateRow('popular-row', animes);
+        populateRow('new-row', [...animes].reverse());
+        populateRow('rec-row', [...animes].sort(() => 0.5 - Math.random()));
+      }
+    } catch (err) {
+      console.error("Animeler yüklenirken hata oluştu:", err);
+    }
+  };
+  loadRealAnimes();
 
   // ─── CAROUSEL CONTROLS ───
   const setupCarousel = (prevBtnId, nextBtnId, rowId) => {
