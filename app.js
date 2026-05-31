@@ -53,14 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ─── MOCK DATA ───
   let animes = [
-    { id: 1, title: 'Your Name', genre: 'Romantik', img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', eps: 1 },
-    { id: 2, title: 'Spirited Away', genre: 'Fantezi', img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&h=600&fit=crop', eps: 1 },
-    { id: 3, title: 'A Silent Voice', genre: 'Drama', img: 'https://images.unsplash.com/photo-1580477655166-51f7bb980d9a?w=400&h=600&fit=crop', eps: 1 },
-    { id: 4, title: 'Violet Evergarden', genre: 'Drama', img: 'https://images.unsplash.com/photo-1613376023733-0a73315d9b06?w=400&h=600&fit=crop', eps: 13 },
-    { id: 5, title: 'Jujutsu Kaisen', genre: 'Aksiyon', img: 'https://images.unsplash.com/photo-1601850494422-3fb19e13fcdb?w=400&h=600&fit=crop', eps: 24 },
-    { id: 6, title: 'Demon Slayer', genre: 'Aksiyon', img: 'https://images.unsplash.com/photo-1611078713203-9118e61fb162?w=400&h=600&fit=crop', eps: 26 },
-    { id: 7, title: 'Horimiya', genre: 'Romantik', img: 'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400&h=600&fit=crop', eps: 13 },
-    { id: 8, title: 'Frieren', genre: 'Fantezi', img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&h=600&fit=crop', eps: 28 },
+    { id: 'mock-1', title: 'Your Name', genre: 'Romantik', img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', eps: 1 },
+    { id: 'mock-2', title: 'Spirited Away', genre: 'Fantezi', img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&h=600&fit=crop', eps: 1 },
+    { id: 'mock-3', title: 'A Silent Voice', genre: 'Drama', img: 'https://images.unsplash.com/photo-1580477655166-51f7bb980d9a?w=400&h=600&fit=crop', eps: 1 },
+    { id: 'mock-4', title: 'Violet Evergarden', genre: 'Drama', img: 'https://images.unsplash.com/photo-1613376023733-0a73315d9b06?w=400&h=600&fit=crop', eps: 13 },
+    { id: 'mock-5', title: 'Jujutsu Kaisen', genre: 'Aksiyon', img: 'https://images.unsplash.com/photo-1601850494422-3fb19e13fcdb?w=400&h=600&fit=crop', eps: 24 },
+    { id: 'mock-6', title: 'Demon Slayer', genre: 'Aksiyon', img: 'https://images.unsplash.com/photo-1611078713203-9118e61fb162?w=400&h=600&fit=crop', eps: 26 },
+    { id: 'mock-7', title: 'Horimiya', genre: 'Romantik', img: 'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400&h=600&fit=crop', eps: 13 },
+    { id: 'mock-8', title: 'Frieren', genre: 'Fantezi', img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&h=600&fit=crop', eps: 28 },
   ];
 
   // ─── RENDER CARDS ───
@@ -391,8 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('player-title').textContent = title;
     document.getElementById('video-anime-title').textContent = title;
     
-    // Mock mu gerçek mi kontrol et (UUID formatı uzundur)
-    isMockAnime = !animeIdStr || (animeIdStr.length < 10 && !isNaN(animeIdStr));
+    // UUID veya ID kontrolü yerine artık kesin olarak string başında 'mock-' olup olmadığına bakıyoruz
+    isMockAnime = animeIdStr ? String(animeIdStr).startsWith('mock-') : false;
     
     if (!isMockAnime) {
       const { data, error } = await supabaseClient
