@@ -941,22 +941,36 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.disabled = true;
       submitBtn.textContent = 'Siliniyor...';
 
-      // Supabase'de Foreign Key Cascade yoksa diye önce bölümleri siliyoruz (hata almamak için).
-      await supabaseClient.from('episodes').delete().eq('anime_id', animeId);
-      
-      const { error } = await supabaseClient.from('animes').delete().eq('id', animeId);
+      try {
+        // Önce bölümleri siliyoruz
+        const { error: epsError } = await supabaseClient.from('episodes').delete().eq('anime_id', animeId);
+        if (epsError) {
+          console.error("Bölüm silinirken hata:", epsError);
+          alert("Animin bölümlerini silerken veritabanı hatası oluştu: " + epsError.message);
+          // İstersek devam edebiliriz ama güvenli olmak için burada durabiliriz.
+          // return yapmıyoruz, animeyi de silmeyi denesin.
+        }
 
-      if (error) {
-        showToast('Hata: ' + error.message, '❌');
-      } else {
-        showToast(`"${animeName}" silindi! 🗑️`, '✨');
-        await loadAnimesForSelect();
-        // İsteğe bağlı sayfayı yenileme veya listeyi güncelleme
-        setTimeout(() => { window.location.reload(); }, 1500);
+        const { error: animeError } = await supabaseClient.from('animes').delete().eq('id', animeId);
+
+        if (animeError) {
+          console.error("Anime silinirken hata:", animeError);
+          alert("Anime silinirken veritabanı hatası oluştu: " + animeError.message);
+          showToast('Hata: ' + animeError.message, '❌');
+        } else {
+          showToast(`"${animeName}" silindi! 🗑️`, '✨');
+          alert(`"${animeName}" başarıyla silindi! Sayfa yenileniyor.`);
+          await loadAnimesForSelect();
+          // Ekrandan da hemen kalkması için animes listesinden filtreleyebiliriz veya basitçe yenileyebiliriz.
+          window.location.reload(); 
+        }
+      } catch (err) {
+        console.error("Silme işlemi sırasında JS hatası:", err);
+        alert("Silme işlemi sırasında beklenmeyen bir hata oluştu. Lütfen geliştirici konsolunu (F12) kontrol edin.");
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Anime Sil';
       }
-
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Anime Sil';
     });
   }
 
