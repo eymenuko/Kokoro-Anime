@@ -322,6 +322,7 @@
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="add-anime" id="tab-add-anime">Anime Ekle</button>
         <button class="admin-tab" data-tab="add-episode" id="tab-add-episode">Bölüm / Video Ekle</button>
+        <button class="admin-tab" data-tab="delete-anime" id="tab-delete-anime">Anime Sil</button>
       </div>
 
       <!-- Anime Ekle Formu -->
@@ -378,6 +379,17 @@
             <input type="url" id="ep-video-input" placeholder="https://tau.video/embed/..." required />
           </div>
           <button type="submit" class="btn-primary full-width" id="add-episode-submit">Bölüm Ekle</button>
+        </form>
+      </div>
+
+      <!-- Anime Sil Formu -->
+      <div id="admin-tab-delete-anime" class="admin-tab-content" style="display:none">
+        <form id="delete-anime-form">
+          <div class="form-group">
+            <label for="delete-anime-select">Silinecek Anime Seç</label>
+            <select id="delete-anime-select" required><option>Yükleniyor...</option></select>
+          </div>
+          <button type="submit" class="btn-primary full-width" id="delete-anime-submit" style="background: var(--warm-heart-red);">Anime Sil</button>
         </form>
       </div>
     </div>

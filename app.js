@@ -830,12 +830,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const loadAnimesForSelect = async () => {
     const { data, error } = await supabaseClient.from('animes').select('id, title').order('title');
     const select = document.getElementById('ep-anime-select');
-    if (!select) return;
+    const deleteSelect = document.getElementById('delete-anime-select');
     if (error || !data?.length) {
-      select.innerHTML = '<option value="">Önce anime ekleyin</option>';
+      if (select) select.innerHTML = '<option value="">Önce anime ekleyin</option>';
+      if (deleteSelect) deleteSelect.innerHTML = '<option value="">Önce anime ekleyin</option>';
       return;
     }
-    select.innerHTML = data.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
+    const options = data.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
+    if (select) select.innerHTML = options;
+    if (deleteSelect) deleteSelect.innerHTML = options;
   };
 
   // Anime Ekle Formu
@@ -898,6 +901,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
       submitBtn.disabled = false;
       submitBtn.textContent = 'Bölüm Ekle';
+    });
+  }
+
+  // Anime Sil Formu
+  const deleteAnimeForm = document.getElementById('delete-anime-form');
+  if (deleteAnimeForm) {
+    deleteAnimeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const deleteSelect = document.getElementById('delete-anime-select');
+      const animeId = deleteSelect.value;
+      
+      if (!animeId) return;
+      
+      const animeName = deleteSelect.options[deleteSelect.selectedIndex].text;
+
+      const confirmDelete = confirm(`"${animeName}" adlı animeyi ve ona ait tüm bölümleri silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz!`);
+      if (!confirmDelete) return;
+
+      const submitBtn = document.getElementById('delete-anime-submit');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Siliniyor...';
+
+      // Supabase'de Foreign Key Cascade yoksa diye önce bölümleri siliyoruz (hata almamak için).
+      await supabaseClient.from('episodes').delete().eq('anime_id', animeId);
+      
+      const { error } = await supabaseClient.from('animes').delete().eq('id', animeId);
+
+      if (error) {
+        showToast('Hata: ' + error.message, '❌');
+      } else {
+        showToast(`"${animeName}" silindi! 🗑️`, '✨');
+        await loadAnimesForSelect();
+        // İsteğe bağlı sayfayı yenileme veya listeyi güncelleme
+        setTimeout(() => { window.location.reload(); }, 1500);
+      }
+
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Anime Sil';
     });
   }
 
