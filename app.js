@@ -828,17 +828,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Anime listesini select'e yükle
   const loadAnimesForSelect = async () => {
-    const { data, error } = await supabaseClient.from('animes').select('id, title').order('title');
     const select = document.getElementById('ep-anime-select');
     const deleteSelect = document.getElementById('delete-anime-select');
-    if (error || !data?.length) {
-      if (select) select.innerHTML = '<option value="">Önce anime ekleyin</option>';
-      if (deleteSelect) deleteSelect.innerHTML = '<option value="">Önce anime ekleyin</option>';
-      return;
+    try {
+      if (select) select.innerHTML = '<option value="">Yükleniyor...</option>';
+      if (deleteSelect) deleteSelect.innerHTML = '<option value="">Yükleniyor...</option>';
+      
+      const { data, error } = await supabaseClient.from('animes').select('id, title').order('title');
+      
+      if (error) {
+        console.error("Animeler yüklenirken hata oluştu:", error);
+        if (select) select.innerHTML = '<option value="">Bağlantı hatası</option>';
+        if (deleteSelect) deleteSelect.innerHTML = '<option value="">Bağlantı hatası</option>';
+        return;
+      }
+      
+      if (!data || data.length === 0) {
+        if (select) select.innerHTML = '<option value="">Önce anime ekleyin</option>';
+        if (deleteSelect) deleteSelect.innerHTML = '<option value="">Önce anime ekleyin</option>';
+        return;
+      }
+      
+      const options = data.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
+      if (select) select.innerHTML = options;
+      if (deleteSelect) deleteSelect.innerHTML = options;
+    } catch (e) {
+      console.error("Beklenmeyen hata:", e);
+      if (select) select.innerHTML = '<option value="">Bir hata oluştu</option>';
+      if (deleteSelect) deleteSelect.innerHTML = '<option value="">Bir hata oluştu</option>';
     }
-    const options = data.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
-    if (select) select.innerHTML = options;
-    if (deleteSelect) deleteSelect.innerHTML = options;
   };
 
   // Anime Ekle Formu
