@@ -25,6 +25,7 @@
         <li><a href="#anime-section" class="nav-link" id="nav-anime">Animeler</a></li>
         <li><a href="#popular-section" class="nav-link" id="nav-popular">Popüler</a></li>
         <li><a href="#list-section" class="nav-link" id="nav-list">Listem</a></li>
+        <li><a href="#forum-section" class="nav-link" id="nav-forum">💬 Forum</a></li>
       </ul>
       <div class="nav-actions">
         <button class="search-btn" id="search-toggle-btn" aria-label="Ara">
@@ -382,6 +383,98 @@
     </div>
   </div>
 
+  <!-- ─── FORUM SECTION ─── -->
+  <section class="forum-section" id="forum-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-group">
+          <span class="section-icon">💬</span>
+          <h2 class="section-title">Anime Forumu</h2>
+        </div>
+        <button class="btn-primary forum-new-btn" id="forum-new-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          Gönderi Paylaş
+        </button>
+      </div>
+
+      <!-- Forum Categories -->
+      <div class="forum-cats" id="forum-cats">
+        <button class="forum-cat-btn active" data-cat="all" id="fcat-all">🌸 Tümü</button>
+        <button class="forum-cat-btn" data-cat="tavsiye" id="fcat-tavsiye">💡 Tavsiye</button>
+        <button class="forum-cat-btn" data-cat="tartisma" id="fcat-tartisma">🔥 Tartışma</button>
+        <button class="forum-cat-btn" data-cat="teori" id="fcat-teori">🔮 Teori</button>
+        <button class="forum-cat-btn" data-cat="fan-art" id="fcat-fanart">🎨 Fan Art</button>
+        <button class="forum-cat-btn" data-cat="duyuru" id="fcat-duyuru">📢 Duyuru</button>
+      </div>
+
+      <!-- Forum Posts Grid -->
+      <div class="forum-grid" id="forum-grid">
+        <div class="forum-loading" id="forum-loading">
+          <div class="forum-spinner"></div>
+          <p>Gönderiler yükleniyor...</p>
+        </div>
+      </div>
+
+      <div class="forum-load-more" id="forum-load-more" style="display:none;">
+        <button class="btn-secondary" id="forum-load-more-btn">Daha Fazla Göster</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FORUM NEW POST MODAL ─── -->
+  <div class="modal-overlay" id="forum-modal">
+    <div class="modal-card forum-modal-card" id="forum-modal-card">
+      <button class="modal-close" id="forum-modal-close" aria-label="Kapat">✕</button>
+      <div class="modal-logo">
+        <span style="font-size:1.5rem">💬</span>
+        <span>Forum Gönderisi</span>
+      </div>
+      <h2 class="modal-title">Yeni Gönderi Oluştur</h2>
+      <p class="modal-sub">Anime topluluğuyla düşüncelerini paylaş 🌸</p>
+      <form class="login-form" id="forum-post-form">
+        <div class="form-group">
+          <label for="forum-post-title">Başlık</label>
+          <input type="text" id="forum-post-title" placeholder="Gönderinin başlığı..." maxlength="120" required />
+        </div>
+        <div class="form-group">
+          <label for="forum-post-category">Kategori</label>
+          <select id="forum-post-category">
+            <option value="tavsiye">💡 Tavsiye</option>
+            <option value="tartisma">🔥 Tartışma</option>
+            <option value="teori">🔮 Teori</option>
+            <option value="fan-art">🎨 Fan Art</option>
+            <option value="duyuru">📢 Duyuru</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="forum-post-content">İçerik</label>
+          <textarea id="forum-post-content" placeholder="Düşüncelerini buraya yaz..." rows="5" maxlength="2000" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="forum-post-anime">İlgili Anime (isteğe bağlı)</label>
+          <input type="text" id="forum-post-anime" placeholder="örn: Attack on Titan" maxlength="80" />
+        </div>
+        <button type="submit" class="btn-primary full-width" id="forum-post-submit">Gönderi Paylaş 🌸</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ─── FORUM POST DETAIL MODAL ─── -->
+  <div class="modal-overlay" id="forum-detail-modal">
+    <div class="modal-card forum-detail-card" id="forum-detail-card">
+      <button class="modal-close" id="forum-detail-close" aria-label="Kapat">✕</button>
+      <div id="forum-detail-content"></div>
+      <div class="forum-comments-section">
+        <h4 class="forum-comments-title">Yorumlar</h4>
+        <div class="forum-comments-list" id="forum-comments-list"></div>
+        <form class="forum-comment-form" id="forum-comment-form">
+          <input type="text" id="forum-comment-input" placeholder="Yorumunu yaz..." maxlength="500" />
+          <button type="submit" class="btn-primary" id="forum-comment-submit">Gönder</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- ─── TOAST ─── -->
   <div class="toast-container" id="toast-container"></div>
 
@@ -414,6 +507,12 @@
             <a href="#">Giriş Yap</a>
             <a href="#">Kayıt Ol</a>
             <a href="#">Listem</a>
+          </div>
+          <div class="footer-col">
+            <h4>Topluluk</h4>
+            <a href="#forum-section">Forum</a>
+            <a href="#">Discord</a>
+            <a href="#">Duyurular</a>
           </div>
         </div>
       </div>

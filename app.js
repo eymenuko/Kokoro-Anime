@@ -900,4 +900,394 @@ document.addEventListener('DOMContentLoaded', () => {
       submitBtn.textContent = 'Bölüm Ekle';
     });
   }
+
+  // ─── FORUM ───
+  const AVATARS = ['🌸', '🦊', '🐼', '🐱', '🌙', '⭐', '🎌', '🦋', '🍡', '🎏'];
+  const CAT_LABELS = { tavsiye: '💡 Tavsiye', tartisma: '🔥 Tartışma', teori: '🔮 Teori', 'fan-art': '🎨 Fan Art', duyuru: '📢 Duyuru' };
+
+  // Mock posts for demo (loaded if DB is empty)
+  const mockForumPosts = [
+    { id: 'fp-1', title: 'Violet Evergarden izledim, hayatım değişti 😭', content: 'Bu anime beni bu kadar derinden etkileyeceğini hiç tahmin etmezdim. Her bölümde ağladım. Siz de izlediyseniz yorumlar bırakın!', category: 'tartisma', anime_tag: 'Violet Evergarden', author_name: 'SakuraFan', created_at: new Date(Date.now() - 2 * 3600000).toISOString(), likes: 42, comments_count: 8 },
+    { id: 'fp-2', title: 'Jujutsu Kaisen 2. sezon teorim 🔮', content: 'Gojo\'nun seallanmasından sonra neler olacak? Bence Yuji yeni bir güç geliştirecek ve finale kadar beklenmedik bir karakter ölümü göreceğiz...', category: 'teori', anime_tag: 'Jujutsu Kaisen', author_name: 'OtakuKing', created_at: new Date(Date.now() - 5 * 3600000).toISOString(), likes: 31, comments_count: 14 },
+    { id: 'fp-3', title: 'En iyi slice-of-life önerileri listesi ✨', content: 'Bugün rahatlatıcı anime arıyorsanız: 1) Yuru Camp 2) Non Non Biyori 3) Barakamon 4) Silver Spoon — bunları kesinlikle deneyin!', category: 'tavsiye', anime_tag: null, author_name: 'CalmVibes', created_at: new Date(Date.now() - 24 * 3600000).toISOString(), likes: 67, comments_count: 23 },
+    { id: 'fp-4', title: 'Frieren fan artım 🎨 (kendi çizimim)', content: 'Frieren karakterini pastel renklerle çizdim, umarım beğenirsiniz! Çizim yapmaya yeni başlıyorum, eleştirilerinizi bekliyorum 🌸', category: 'fan-art', anime_tag: 'Frieren', author_name: 'ArtistAkane', created_at: new Date(Date.now() - 48 * 3600000).toISOString(), likes: 88, comments_count: 31 },
+    { id: 'fp-5', title: 'Yeni sezon duyuruları - Yaz 2026', content: 'Bu sezon çok heyecan verici animeler başlıyor! Hangi animeyi en çok bekliyorsunuz? Ben kesinlikle yeni isekai serisi için sabırsızlanıyorum.', category: 'duyuru', anime_tag: null, author_name: 'AnimeNews', created_at: new Date(Date.now() - 72 * 3600000).toISOString(), likes: 55, comments_count: 19 },
+    { id: 'fp-6', title: 'Your Name ve A Silent Voice karşılaştırması', content: 'Her ikisi de Makoto Shinkai\'nin başyapıtları mı? Yoksa A Silent Voice Kyoto Animation\'ın eseri mi? Hangi animeyi daha çok sevdiniz ve neden?', category: 'tartisma', anime_tag: null, author_name: 'CinemaOtaku', created_at: new Date(Date.now() - 96 * 3600000).toISOString(), likes: 74, comments_count: 42 },
+  ];
+
+  let forumPosts = [];
+  let activeCat = 'all';
+  let openPostId = null;
+
+  // LocalStorage helpers for likes
+  const getLikedPosts = () => JSON.parse(localStorage.getItem('kk_liked_posts') || '[]');
+  const toggleLike = (id) => {
+    const liked = getLikedPosts();
+    const idx = liked.indexOf(id);
+    if (idx > -1) { liked.splice(idx, 1); } else { liked.push(id); }
+    localStorage.setItem('kk_liked_posts', JSON.stringify(liked));
+    return idx === -1; // returns true if now liked
+  };
+
+  const timeAgo = (dateStr) => {
+    const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+    if (diff < 60) return 'Az önce';
+    if (diff < 3600) return `${Math.floor(diff / 60)} dakika önce`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} saat önce`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)} gün önce`;
+    return new Date(dateStr).toLocaleDateString('tr-TR');
+  };
+
+  const renderForumCard = (post) => {
+    const likedPosts = getLikedPosts();
+    const isLiked = likedPosts.includes(post.id);
+    const avatarEmoji = AVATARS[Math.abs(post.id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % AVATARS.length];
+    return `
+      <div class="forum-card" data-post-id="${post.id}" id="fcard-${post.id}">
+        <div class="forum-card-header">
+          <div class="forum-author-avatar">${avatarEmoji}</div>
+          <div class="forum-author-info">
+            <div class="forum-author-name">${post.author_name || 'Anonim'}</div>
+            <div class="forum-post-date">${timeAgo(post.created_at)}</div>
+          </div>
+          <span class="forum-cat-badge ${post.category}">${CAT_LABELS[post.category] || post.category}</span>
+        </div>
+        <div class="forum-card-title">${post.title}</div>
+        <div class="forum-card-excerpt">${post.content}</div>
+        ${post.anime_tag ? `<span class="forum-card-anime-tag">🎌 ${post.anime_tag}</span>` : ''}
+        <div class="forum-card-footer">
+          <button class="forum-like-btn ${isLiked ? 'liked' : ''}" data-post-id="${post.id}" id="like-btn-${post.id}">
+            ${isLiked ? '❤️' : '🤍'} <span id="like-count-${post.id}">${post.likes || 0}</span>
+          </button>
+          <div class="forum-stat">💬 <span>${post.comments_count || 0}</span></div>
+        </div>
+      </div>
+    `;
+  };
+
+  const renderForumGrid = (posts) => {
+    const grid = document.getElementById('forum-grid');
+    if (!grid) return;
+    if (!posts || posts.length === 0) {
+      grid.innerHTML = `<div class="forum-empty"><div class="empty-icon">🌸</div><p>Henüz gönderi yok.<br/>İlk gönderiyi sen paylaş!</p></div>`;
+      return;
+    }
+    grid.innerHTML = posts.map(renderForumCard).join('');
+  };
+
+  const getFilteredPosts = () => {
+    if (activeCat === 'all') return forumPosts;
+    return forumPosts.filter(p => p.category === activeCat);
+  };
+
+  const loadForumPosts = async () => {
+    const grid = document.getElementById('forum-grid');
+    if (!grid) return;
+    grid.innerHTML = `<div class="forum-loading"><div class="forum-spinner"></div><p>Gönderiler yükleniyor...</p></div>`;
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('forum_posts')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(50);
+
+      if (!error && data && data.length > 0) {
+        forumPosts = data;
+      } else {
+        // Supabase yoksa mock data kullan
+        forumPosts = mockForumPosts;
+      }
+    } catch (e) {
+      forumPosts = mockForumPosts;
+    }
+
+    renderForumGrid(getFilteredPosts());
+  };
+
+  loadForumPosts();
+
+  // Category filter
+  document.querySelectorAll('.forum-cat-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.forum-cat-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCat = btn.dataset.cat;
+      renderForumGrid(getFilteredPosts());
+    });
+  });
+
+  // Like button (event delegation)
+  document.addEventListener('click', async (e) => {
+    const likeBtn = e.target.closest('.forum-like-btn');
+    if (likeBtn) {
+      e.stopPropagation();
+      const postId = likeBtn.dataset.postId;
+      const nowLiked = toggleLike(postId);
+      const post = forumPosts.find(p => String(p.id) === String(postId));
+      if (post) {
+        post.likes = (post.likes || 0) + (nowLiked ? 1 : -1);
+        likeBtn.classList.toggle('liked', nowLiked);
+        likeBtn.innerHTML = `${nowLiked ? '❤️' : '🤍'} <span id="like-count-${postId}">${post.likes}</span>`;
+        // Try DB update (non-blocking)
+        try {
+          await supabaseClient.from('forum_posts').update({ likes: post.likes }).eq('id', postId);
+        } catch (_) {}
+      }
+    }
+  });
+
+  // Open post detail
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.forum-card');
+    if (card && !e.target.closest('.forum-like-btn')) {
+      const postId = card.dataset.postId;
+      openForumDetail(postId);
+    }
+  });
+
+  const openForumDetail = async (postId) => {
+    openPostId = postId;
+    const post = forumPosts.find(p => String(p.id) === String(postId));
+    if (!post) return;
+
+    const likedPosts = getLikedPosts();
+    const isLiked = likedPosts.includes(String(postId));
+    const avatarEmoji = AVATARS[Math.abs(String(postId).split('').reduce((a, c) => a + c.charCodeAt(0), 0)) % AVATARS.length];
+
+    const detailContent = document.getElementById('forum-detail-content');
+    detailContent.innerHTML = `
+      <div class="forum-detail-header">
+        <div class="forum-detail-meta">
+          <div class="forum-author-avatar">${avatarEmoji}</div>
+          <div class="forum-author-info">
+            <div class="forum-author-name">${post.author_name || 'Anonim'}</div>
+            <div class="forum-post-date">${timeAgo(post.created_at)}</div>
+          </div>
+          <span class="forum-cat-badge ${post.category}">${CAT_LABELS[post.category] || post.category}</span>
+          ${post.anime_tag ? `<span class="forum-card-anime-tag">🎌 ${post.anime_tag}</span>` : ''}
+        </div>
+        <div class="forum-detail-title">${post.title}</div>
+        <div class="forum-detail-body">${post.content}</div>
+        <div class="forum-detail-actions">
+          <button class="forum-like-btn ${isLiked ? 'liked' : ''}" data-post-id="${postId}" id="detail-like-btn">
+            ${isLiked ? '❤️' : '🤍'} <span>${post.likes || 0}</span> Beğeni
+          </button>
+          <div class="forum-stat">💬 ${post.comments_count || 0} Yorum</div>
+        </div>
+      </div>
+    `;
+
+    loadComments(postId);
+
+    document.getElementById('forum-detail-modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeForumDetail = () => {
+    document.getElementById('forum-detail-modal').classList.remove('active');
+    document.body.style.overflow = '';
+    openPostId = null;
+  };
+
+  document.getElementById('forum-detail-close').addEventListener('click', closeForumDetail);
+  document.getElementById('forum-detail-modal').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('forum-detail-modal')) closeForumDetail();
+  });
+
+  const loadComments = async (postId) => {
+    const list = document.getElementById('forum-comments-list');
+    list.innerHTML = `<div class="forum-comment-empty">Yorumlar yükleniyor...</div>`;
+
+    try {
+      const { data, error } = await supabaseClient
+        .from('forum_comments')
+        .select('*')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true })
+        .limit(50);
+
+      if (!error && data && data.length > 0) {
+        renderComments(data);
+      } else {
+        list.innerHTML = `<div class="forum-comment-empty">Henüz yorum yok. İlk yorumu sen yap! 🌸</div>`;
+      }
+    } catch (e) {
+      list.innerHTML = `<div class="forum-comment-empty">Henüz yorum yok. İlk yorumu sen yap! 🌸</div>`;
+    }
+  };
+
+  const renderComments = (comments) => {
+    const list = document.getElementById('forum-comments-list');
+    if (!comments || comments.length === 0) {
+      list.innerHTML = `<div class="forum-comment-empty">Henüz yorum yok. İlk yorumu sen yap! 🌸</div>`;
+      return;
+    }
+    list.innerHTML = comments.map(c => {
+      const av = AVATARS[Math.abs(String(c.id || '').split('').reduce((a, ch) => a + ch.charCodeAt(0), 0)) % AVATARS.length];
+      return `
+        <div class="forum-comment-item">
+          <div class="forum-comment-avatar">${av}</div>
+          <div class="forum-comment-bubble">
+            <div class="forum-comment-author">${c.author_name || 'Anonim'}</div>
+            <div class="forum-comment-text">${c.content}</div>
+            <div class="forum-comment-time">${timeAgo(c.created_at)}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    list.scrollTop = list.scrollHeight;
+  };
+
+  // Comment form
+  document.getElementById('forum-comment-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('forum-comment-input');
+    const content = input.value.trim();
+    if (!content) return;
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    const authorName = user ? (user.user_metadata?.username || user.email?.split('@')[0] || 'Anonim') : 'Anonim';
+
+    const submitBtn = document.getElementById('forum-comment-submit');
+    submitBtn.disabled = true;
+
+    const newComment = {
+      post_id: openPostId,
+      content,
+      author_name: authorName,
+      created_at: new Date().toISOString(),
+    };
+
+    try {
+      const { data, error } = await supabaseClient.from('forum_comments').insert(newComment).select().single();
+      if (!error && data) {
+        // Success: reload comments
+        await loadComments(openPostId);
+        // Update comment count
+        const post = forumPosts.find(p => String(p.id) === String(openPostId));
+        if (post) {
+          post.comments_count = (post.comments_count || 0) + 1;
+          await supabaseClient.from('forum_posts').update({ comments_count: post.comments_count }).eq('id', openPostId);
+        }
+      } else {
+        // Mock fallback: show locally
+        const list = document.getElementById('forum-comments-list');
+        const emptyMsg = list.querySelector('.forum-comment-empty');
+        if (emptyMsg) emptyMsg.remove();
+        const av = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+        list.insertAdjacentHTML('beforeend', `
+          <div class="forum-comment-item">
+            <div class="forum-comment-avatar">${av}</div>
+            <div class="forum-comment-bubble">
+              <div class="forum-comment-author">${authorName}</div>
+              <div class="forum-comment-text">${content}</div>
+              <div class="forum-comment-time">Az önce</div>
+            </div>
+          </div>
+        `);
+        list.scrollTop = list.scrollHeight;
+      }
+    } catch (_) {
+      // Same local fallback
+      const list = document.getElementById('forum-comments-list');
+      const emptyMsg = list.querySelector('.forum-comment-empty');
+      if (emptyMsg) emptyMsg.remove();
+      const av = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+      list.insertAdjacentHTML('beforeend', `
+        <div class="forum-comment-item">
+          <div class="forum-comment-avatar">${av}</div>
+          <div class="forum-comment-bubble">
+            <div class="forum-comment-author">${authorName}</div>
+            <div class="forum-comment-text">${content}</div>
+            <div class="forum-comment-time">Az önce</div>
+          </div>
+        </div>
+      `);
+      list.scrollTop = list.scrollHeight;
+    }
+
+    input.value = '';
+    submitBtn.disabled = false;
+  });
+
+  // New Post Modal
+  const forumModal = document.getElementById('forum-modal');
+  const forumNewBtn = document.getElementById('forum-new-btn');
+  const forumModalClose = document.getElementById('forum-modal-close');
+
+  const openForumModal = () => {
+    forumModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeForumModal = () => {
+    forumModal.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  if (forumNewBtn) forumNewBtn.addEventListener('click', openForumModal);
+  if (forumModalClose) forumModalClose.addEventListener('click', closeForumModal);
+  forumModal.addEventListener('click', (e) => { if (e.target === forumModal) closeForumModal(); });
+
+  // New Post Form Submit
+  document.getElementById('forum-post-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const { data: { user } } = await supabaseClient.auth.getUser();
+    if (!user) {
+      showToast('Gönderi paylaşmak için giriş yapmalısın!', '⚠️');
+      closeForumModal();
+      openLogin();
+      return;
+    }
+
+    const title = document.getElementById('forum-post-title').value.trim();
+    const content = document.getElementById('forum-post-content').value.trim();
+    const category = document.getElementById('forum-post-category').value;
+    const animeTag = document.getElementById('forum-post-anime').value.trim() || null;
+    const authorName = user.user_metadata?.username || user.email?.split('@')[0] || 'Anonim';
+
+    const submitBtn = document.getElementById('forum-post-submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Paylaşılıyor...';
+
+    const newPost = {
+      title,
+      content,
+      category,
+      anime_tag: animeTag,
+      author_name: authorName,
+      author_id: user.id,
+      likes: 0,
+      comments_count: 0,
+      created_at: new Date().toISOString(),
+    };
+
+    try {
+      const { data, error } = await supabaseClient.from('forum_posts').insert(newPost).select().single();
+      if (!error && data) {
+        forumPosts.unshift(data);
+      } else {
+        // Mock fallback
+        newPost.id = 'fp-local-' + Date.now();
+        forumPosts.unshift(newPost);
+      }
+    } catch (_) {
+      newPost.id = 'fp-local-' + Date.now();
+      forumPosts.unshift(newPost);
+    }
+
+    renderForumGrid(getFilteredPosts());
+    showToast('Gönderin paylaşıldı! 🌸', '✨');
+    document.getElementById('forum-post-form').reset();
+    closeForumModal();
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Gönderi Paylaş 🌸';
+
+    // Scroll to forum
+    document.getElementById('forum-section').scrollIntoView({ behavior: 'smooth' });
+  });
+
 });
