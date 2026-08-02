@@ -1234,60 +1234,78 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('forum-post-form').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-      showToast('Gönderi paylaşmak için giriş yapmalısın!', '⚠️');
-      closeForumModal();
-      openLogin();
-      return;
-    }
-
-    const title = document.getElementById('forum-post-title').value.trim();
-    const content = document.getElementById('forum-post-content').value.trim();
-    const category = document.getElementById('forum-post-category').value;
-    const animeTag = document.getElementById('forum-post-anime').value.trim() || null;
-    const authorName = user.user_metadata?.username || user.email?.split('@')[0] || 'Anonim';
-
     const submitBtn = document.getElementById('forum-post-submit');
     submitBtn.disabled = true;
     submitBtn.textContent = 'Paylaşılıyor...';
 
-    const newPost = {
-      title,
-      content,
-      category,
-      anime_tag: animeTag,
-      author_name: authorName,
-      author_id: user.id,
-      likes: 0,
-      comments_count: 0,
-      created_at: new Date().toISOString(),
-    };
-
     try {
-      const { data, error } = await supabaseClient.from('forum_posts').insert(newPost).select().single();
-      if (!error && data) {
-        forumPosts.unshift(data);
-      } else {
-        // Mock fallback
+      // Auth kontrolü
+      let user = null;
+      try {
+        const { data } = await supabaseClient.auth.getUser();
+        user = data?.user ?? null;
+      } catch (_) {}
+
+      if (!user) {
+        showToast('Gönderi paylaşmak için giriş yapmalısın!', '⚠️');
+        closeForumModal();
+        openLogin();
+        return;
+      }
+
+      const title = document.getElementById('forum-post-title').value.trim();
+      const content = document.getElementById('forum-post-content').value.trim();
+      const category = document.getElementById('forum-post-category').value;
+      const animeTag = document.getElementById('forum-post-anime').value.trim() || null;
+      const authorName = user.user_metadata?.username || user.email?.split('@')[0] || 'Anonim';
+
+      if (!title || !content) {
+        showToast('Başlık ve içerik zorunludur!', '⚠️');
+        return;
+      }
+
+      const newPost = {
+        title,
+        content,
+        category,
+        anime_tag: animeTag,
+        author_name: authorName,
+        likes: 0,
+        comments_count: 0,
+        created_at: new Date().toISOString(),
+      };
+
+      // Supabase'e kaydetmeyi dene, başarısız olursa local state'e ekle
+      try {
+        const { data: inserted, error } = await supabaseClient
+          .from('forum_posts')
+          .insert({ ...newPost, author_id: user.id })
+          .select()
+          .single();
+        if (!error && inserted) {
+          forumPosts.unshift(inserted);
+        } else {
+          newPost.id = 'fp-local-' + Date.now();
+          forumPosts.unshift(newPost);
+        }
+      } catch (_) {
         newPost.id = 'fp-local-' + Date.now();
         forumPosts.unshift(newPost);
       }
-    } catch (_) {
-      newPost.id = 'fp-local-' + Date.now();
-      forumPosts.unshift(newPost);
+
+      renderForumGrid(getFilteredPosts());
+      showToast('Gönderin paylaşıldı! 🌸', '✨');
+      document.getElementById('forum-post-form').reset();
+      closeForumModal();
+
+      // Scroll to forum
+      document.getElementById('forum-section').scrollIntoView({ behavior: 'smooth' });
+
+    } finally {
+      // Düğme her koşulda serbest bırakılır
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Gönderi Paylaş 🌸';
     }
-
-    renderForumGrid(getFilteredPosts());
-    showToast('Gönderin paylaşıldı! 🌸', '✨');
-    document.getElementById('forum-post-form').reset();
-    closeForumModal();
-
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Gönderi Paylaş 🌸';
-
-    // Scroll to forum
-    document.getElementById('forum-section').scrollIntoView({ behavior: 'smooth' });
   });
 
 });
