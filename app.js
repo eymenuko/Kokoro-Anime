@@ -52,16 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // ─── MOCK DATA ───
-  let animes = [
-    { id: 'mock-1', title: 'Your Name', genre: 'Romantik', img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=600&fit=crop', eps: 1 },
-    { id: 'mock-2', title: 'Spirited Away', genre: 'Fantezi', img: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=400&h=600&fit=crop', eps: 1 },
-    { id: 'mock-3', title: 'A Silent Voice', genre: 'Drama', img: 'https://images.unsplash.com/photo-1580477655166-51f7bb980d9a?w=400&h=600&fit=crop', eps: 1 },
-    { id: 'mock-4', title: 'Violet Evergarden', genre: 'Drama', img: 'https://images.unsplash.com/photo-1613376023733-0a73315d9b06?w=400&h=600&fit=crop', eps: 13 },
-    { id: 'mock-5', title: 'Jujutsu Kaisen', genre: 'Aksiyon', img: 'https://images.unsplash.com/photo-1601850494422-3fb19e13fcdb?w=400&h=600&fit=crop', eps: 24 },
-    { id: 'mock-6', title: 'Demon Slayer', genre: 'Aksiyon', img: 'https://images.unsplash.com/photo-1611078713203-9118e61fb162?w=400&h=600&fit=crop', eps: 26 },
-    { id: 'mock-7', title: 'Horimiya', genre: 'Romantik', img: 'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=400&h=600&fit=crop', eps: 13 },
-    { id: 'mock-8', title: 'Frieren', genre: 'Fantezi', img: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400&h=600&fit=crop', eps: 28 },
-  ];
+  let animes = [];
 
   // ─── RENDER CARDS ───
   const createCard = (anime) => {
@@ -112,11 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
   };
 
-  const continueAnimesData = [
-    { ...animes[4], progress: 65, currentSeason: 2, currentEp: 12 },
-    { ...animes[7], progress: 30, currentSeason: 1, currentEp: 4 },
-    { ...animes[2], progress: 90, currentSeason: 1, currentEp: 1 }
-  ];
+  const continueAnimesData = [];
 
   const populateContinueRow = () => {
     const row = document.getElementById('continue-row');
@@ -124,11 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
       row.innerHTML = continueAnimesData.map(createContinueCard).join('');
     }
   };
-
-  populateContinueRow();
-  populateRow('popular-row', animes);
-  populateRow('new-row', [...animes].reverse());
-  populateRow('rec-row', [...animes].sort(() => 0.5 - Math.random()));
 
   // ─── FETCH FROM SUPABASE ───
   const loadRealAnimes = async () => {
@@ -143,11 +125,12 @@ document.addEventListener('DOMContentLoaded', () => {
           eps: (a.seasons * 12) + '?' // Şimdilik yaklaşık bölüm sayısı
         }));
         
-        animes = [...realAnimes, ...animes];
+        animes = [...realAnimes];
         
         populateRow('popular-row', animes);
         populateRow('new-row', [...animes].reverse());
         populateRow('rec-row', [...animes].sort(() => 0.5 - Math.random()));
+        setRandomFeatured();
       }
     } catch (err) {
       console.error("Animeler yüklenirken hata oluştu:", err);
@@ -525,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ─── RANDOM FEATURED ANIME ───
   const setRandomFeatured = () => {
+    if (animes.length === 0) return;
     const randomAnime = animes[Math.floor(Math.random() * animes.length)];
     
     // Update DOM elements
@@ -553,8 +537,6 @@ document.addEventListener('DOMContentLoaded', () => {
       heroStartBtn.onclick = clickHandler;
     }
   };
-  
-  setRandomFeatured();
 
   if (playerClose) playerClose.addEventListener('click', closePlayer);
   if (playerBackdrop) playerBackdrop.addEventListener('click', closePlayer);
@@ -829,33 +811,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // Anime listesini select'e yükle
   const loadAnimesForSelect = async () => {
     const select = document.getElementById('ep-anime-select');
-    const deleteSelect = document.getElementById('delete-anime-select');
     try {
       if (select) select.innerHTML = '<option value="">Yükleniyor...</option>';
-      if (deleteSelect) deleteSelect.innerHTML = '<option value="">Yükleniyor...</option>';
       
       const { data, error } = await supabaseClient.from('animes').select('id, title').order('title');
       
       if (error) {
         console.error("Animeler yüklenirken hata oluştu:", error);
         if (select) select.innerHTML = '<option value="">Bağlantı hatası</option>';
-        if (deleteSelect) deleteSelect.innerHTML = '<option value="">Bağlantı hatası</option>';
         return;
       }
       
       if (!data || data.length === 0) {
         if (select) select.innerHTML = '<option value="">Önce anime ekleyin</option>';
-        if (deleteSelect) deleteSelect.innerHTML = '<option value="">Önce anime ekleyin</option>';
         return;
       }
       
       const options = data.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
       if (select) select.innerHTML = options;
-      if (deleteSelect) deleteSelect.innerHTML = options;
     } catch (e) {
       console.error("Beklenmeyen hata:", e);
       if (select) select.innerHTML = '<option value="">Bir hata oluştu</option>';
-      if (deleteSelect) deleteSelect.innerHTML = '<option value="">Bir hata oluştu</option>';
     }
   };
 
@@ -922,61 +898,38 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Anime Sil Formu
-  const deleteAnimeForm = document.getElementById('delete-anime-form');
-  if (deleteAnimeForm) {
-    deleteAnimeForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const deleteSelect = document.getElementById('delete-anime-select');
-      const animeId = deleteSelect.value;
-      
-      if (!animeId) return;
-      
-      const animeName = deleteSelect.options[deleteSelect.selectedIndex].text;
 
-      const confirmDelete = confirm(`"${animeName}" adlı animeyi ve ona ait tüm bölümleri silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz!`);
-      if (!confirmDelete) return;
-
-      const submitBtn = document.getElementById('delete-anime-submit');
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Siliniyor...';
-
-      try {
-        // Önce bölümleri siliyoruz
-        const { error: epsError } = await supabaseClient.from('episodes').delete().eq('anime_id', animeId);
-        if (epsError) {
-          console.error("Bölüm silinirken hata:", epsError);
-          alert("Animin bölümlerini silerken veritabanı hatası oluştu: " + epsError.message);
-          // İstersek devam edebiliriz ama güvenli olmak için burada durabiliriz.
-          // return yapmıyoruz, animeyi de silmeyi denesin.
-        }
-
-        const { error: animeError } = await supabaseClient.from('animes').delete().eq('id', animeId);
-
-        if (animeError) {
-          console.error("Anime silinirken hata:", animeError);
-          alert("Anime silinirken veritabanı hatası oluştu: " + animeError.message);
-          showToast('Hata: ' + animeError.message, '❌');
-        } else {
-          showToast(`"${animeName}" silindi! 🗑️`, '✨');
-          alert(`"${animeName}" başarıyla silindi! Sayfa yenileniyor.`);
-          await loadAnimesForSelect();
-          // Ekrandan da hemen kalkması için animes listesinden filtreleyebiliriz veya basitçe yenileyebiliriz.
-          window.location.reload(); 
-        }
-      } catch (err) {
-        console.error("Silme işlemi sırasında JS hatası:", err);
-        alert("Silme işlemi sırasında beklenmeyen bir hata oluştu. Lütfen geliştirici konsolunu (F12) kontrol edin.");
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Anime Sil';
-      }
-    });
-  }
 
   // ─── FORUM ───
   const AVATARS = ['🌸', '🦊', '🐼', '🐱', '🌙', '⭐', '🎌', '🦋', '🍡', '🎏'];
   const CAT_LABELS = { tavsiye: '💡 Tavsiye', tartisma: '🔥 Tartışma', teori: '🔮 Teori', 'fan-art': '🎨 Fan Art', duyuru: '📢 Duyuru' };
+
+  // ─── FORUM GÖRSEL YÜKLEME (imgbb) ───
+  const IMGBB_API_KEY = '273b87e235f85d989e9ed809490193c9';
+  const MAX_IMAGE_MB = 5;
+
+  // Seçilen dosyayı imgbb'ye yükler, kalıcı bir görsel URL'si döndürür
+  const uploadImageToImgbb = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json();
+    if (!data || !data.success) throw new Error('imgbb yükleme başarısız');
+    return data.data.url; // doğrudan görsel linki (i.ibb.co/...)
+  };
+
+  // wsrv.nl üzerinden görseli yeniden boyutlandırıp optimize eden URL üretir
+  // wsrv.nl kendisi depolama yapmaz; zaten var olan bir URL'yi proxy'ler.
+  const wsrvUrl = (url, { w, h, q = 80, fit = 'cover' } = {}) => {
+    if (!url) return '';
+    const params = new URLSearchParams({ url, q: String(q), fit });
+    if (w) params.set('w', String(w));
+    if (h) params.set('h', String(h));
+    return `https://wsrv.nl/?${params.toString()}`;
+  };
 
   // Mock posts for demo (loaded if DB is empty)
   const mockForumPosts = [
@@ -1025,6 +978,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <span class="forum-cat-badge ${post.category}">${CAT_LABELS[post.category] || post.category}</span>
         </div>
+        ${post.image_url ? `<img class="forum-card-img" src="${wsrvUrl(post.image_url, { w: 500, h: 340 })}" alt="Gönderi görseli" loading="lazy" />` : ''}
         <div class="forum-card-title">${post.title}</div>
         <div class="forum-card-excerpt">${post.content}</div>
         ${post.anime_tag ? `<span class="forum-card-anime-tag">🎌 ${post.anime_tag}</span>` : ''}
@@ -1141,6 +1095,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${post.anime_tag ? `<span class="forum-card-anime-tag">🎌 ${post.anime_tag}</span>` : ''}
         </div>
         <div class="forum-detail-title">${post.title}</div>
+        ${post.image_url ? `<img class="forum-detail-img" src="${wsrvUrl(post.image_url, { w: 900, q: 85 })}" alt="Gönderi görseli" loading="lazy" />` : ''}
         <div class="forum-detail-body">${post.content}</div>
         <div class="forum-detail-actions">
           <button class="forum-like-btn ${isLiked ? 'liked' : ''}" data-post-id="${postId}" id="detail-like-btn">
@@ -1303,6 +1258,47 @@ document.addEventListener('DOMContentLoaded', () => {
   if (forumModalClose) forumModalClose.addEventListener('click', closeForumModal);
   forumModal.addEventListener('click', (e) => { if (e.target === forumModal) closeForumModal(); });
 
+  // Fotoğraf seçimi → önizleme
+  const forumImageInput = document.getElementById('forum-post-image');
+  const forumImagePreview = document.getElementById('forum-image-preview');
+  const forumImagePreviewImg = document.getElementById('forum-image-preview-img');
+  const forumImageRemove = document.getElementById('forum-image-remove');
+
+  const clearForumImageSelection = () => {
+    forumImageInput.value = '';
+    forumImagePreview.style.display = 'none';
+    forumImagePreviewImg.src = '';
+  };
+
+  if (forumImageInput) {
+    forumImageInput.addEventListener('change', () => {
+      const file = forumImageInput.files?.[0];
+      if (!file) { clearForumImageSelection(); return; }
+
+      if (!file.type.startsWith('image/')) {
+        showToast('Lütfen bir görsel dosyası seç.', '⚠️');
+        clearForumImageSelection();
+        return;
+      }
+      if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
+        showToast(`Görsel en fazla ${MAX_IMAGE_MB}MB olabilir.`, '⚠️');
+        clearForumImageSelection();
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        forumImagePreviewImg.src = reader.result;
+        forumImagePreview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  if (forumImageRemove) {
+    forumImageRemove.addEventListener('click', clearForumImageSelection);
+  }
+
   // New Post Form Submit
   document.getElementById('forum-post-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -1337,11 +1333,25 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
+      // Fotoğraf seçilmişse önce imgbb'ye yükle
+      let imageUrl = null;
+      const selectedImageFile = forumImageInput?.files?.[0] || null;
+      if (selectedImageFile) {
+        submitBtn.textContent = 'Fotoğraf yükleniyor...';
+        try {
+          imageUrl = await uploadImageToImgbb(selectedImageFile);
+        } catch (_) {
+          showToast('Fotoğraf yüklenemedi, gönderi görselsiz paylaşılacak.', '⚠️');
+        }
+        submitBtn.textContent = 'Paylaşılıyor...';
+      }
+
       const newPost = {
         title,
         content,
         category,
         anime_tag: animeTag,
+        image_url: imageUrl,
         author_name: authorName,
         likes: 0,
         comments_count: 0,
@@ -1369,6 +1379,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderForumGrid(getFilteredPosts());
       showToast('Gönderin paylaşıldı! 🌸', '✨');
       document.getElementById('forum-post-form').reset();
+      clearForumImageSelection();
       closeForumModal();
 
       // Scroll to forum

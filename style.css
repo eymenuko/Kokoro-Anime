@@ -1492,6 +1492,69 @@ h1, h2, h3, h4 {
   width: 100%;
 }
 
+/* Forum görsel yükleme önizlemesi */
+.form-group input[type="file"] {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: 1px dashed var(--glass-border);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.88rem;
+  background: var(--milky-white);
+  cursor: pointer;
+}
+
+.forum-image-preview {
+  position: relative;
+  margin-top: 0.85rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  max-height: 220px;
+}
+
+.forum-image-preview img {
+  width: 100%;
+  max-height: 220px;
+  object-fit: cover;
+  display: block;
+}
+
+.forum-image-remove {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Forum kartlarındaki gönderi görseli */
+.forum-card-img {
+  width: 100%;
+  height: 170px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+.forum-detail-img {
+  width: 100%;
+  max-height: 380px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin: 1rem 0;
+  display: block;
+}
+
 .modal-switch {
   margin-top: 1.5rem;
   font-size: 0.9rem;

@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kokoro Anime – Ruhunu Dinlendiren Anime Dünyası</title>
-  <meta name="description" content="Kokoro Anime, rahatlatıcı pastel tasarımıyla anime izleme deneyimini yeniden tanımlıyor. Popüler animeleri keşfet, listeni oluştur, izlemeye başla." />
+  <meta name="description"
+    content="Kokoro Anime, rahatlatıcı pastel tasarımıyla anime izleme deneyimini yeniden tanımlıyor. Popüler animeleri keşfet, listeni oluştur, izlemeye başla." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 
   <!-- ─── NAVBAR ─── -->
@@ -29,7 +34,11 @@
       </ul>
       <div class="nav-actions">
         <button class="search-btn" id="search-toggle-btn" aria-label="Ara">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
         </button>
         <!-- Giriş yapılmamışsa -->
         <button class="login-btn" id="login-btn" style="display:block">Giriş Yap</button>
@@ -52,7 +61,10 @@
   <!-- ─── SEARCH OVERLAY ─── -->
   <div class="search-overlay" id="search-overlay">
     <div class="search-box">
-      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
       <input type="text" id="search-input" placeholder="Anime ara… (örn: Naruto, Attack on Titan)" autocomplete="off" />
       <button id="search-close" aria-label="Kapat">✕</button>
     </div>
@@ -67,11 +79,14 @@
     </div>
     <div class="hero-content">
       <div class="hero-badge">🌸 Yeni Sezon Başladı</div>
-      <h1 class="hero-title">Ruhunu Dinlendiren<br/><em>Anime Dünyası</em></h1>
-      <p class="hero-desc">Pastel bir atmosferde, kalbini dokunduran animeleri keşfet.<br/>Stressiz, temiz ve tamamen senin için.</p>
+      <h1 class="hero-title">Ruhunu Dinlendiren<br /><em>Anime Dünyası</em></h1>
+      <p class="hero-desc">Pastel bir atmosferde, kalbini dokunduran animeleri keşfet.<br />Stressiz, temiz ve tamamen
+        senin için.</p>
       <div class="hero-buttons">
         <button class="btn-primary" id="hero-start-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z" />
+          </svg>
           İzlemeye Başla
         </button>
         <button class="btn-secondary" id="hero-explore-btn">Keşfet</button>
@@ -86,7 +101,8 @@
     </div>
     <div class="hero-visual">
       <div class="featured-card" id="featured-card">
-        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=560&fit=crop&crop=center" alt="Öne Çıkan Anime" class="featured-img" id="featured-img" />
+        <img src="https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=560&fit=crop&crop=center"
+          alt="Öne Çıkan Anime" class="featured-img" id="featured-img" />
         <div class="featured-overlay">
           <div class="featured-badge">⭐ 9.2</div>
           <div class="featured-info">
@@ -94,7 +110,9 @@
             <p id="featured-genre">Romantik · Drama</p>
           </div>
           <button class="featured-play" id="featured-play-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M8 5v14l11-7z" />
+            </svg>
           </button>
         </div>
       </div>
@@ -204,7 +222,7 @@
       <div class="list-grid" id="list-grid">
         <div class="list-empty" id="list-empty">
           <div class="empty-icon">🌸</div>
-          <p>Henüz listeniz boş.<br/>Anime kartlarına tıklayarak ekleyebilirsiniz.</p>
+          <p>Henüz listeniz boş.<br />Anime kartlarına tıklayarak ekleyebilirsiniz.</p>
         </div>
       </div>
     </div>
@@ -223,12 +241,18 @@
           </div>
         </div>
         <div class="video-wrapper">
-          <video id="player-video" class="player-video" style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;" controls playsinline></video>
-          <iframe id="player-iframe" class="player-video" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; border: none;" allowfullscreen allow="autoplay; fullscreen"></iframe>
+          <video id="player-video" class="player-video"
+            style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;"
+            controls playsinline></video>
+          <iframe id="player-iframe" class="player-video"
+            style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; border: none;"
+            allowfullscreen allow="autoplay; fullscreen"></iframe>
           <div class="video-placeholder" id="video-placeholder">
             <div class="video-overlay-text">
               <div class="video-play-icon">
-                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
               </div>
               <h3 id="video-anime-title">Your Name</h3>
               <p>Bu demo bir önizlemedir. Gerçek içerik için giriş yapın.</p>
@@ -246,12 +270,16 @@
           </div>
           <div class="controls-row">
             <button class="ctrl-btn" id="ctrl-play" aria-label="Oynat/Durdur">
-              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+              </svg>
             </button>
             <button class="ctrl-btn" id="ctrl-prev-ep" aria-label="Önceki Bölüm">⏮</button>
             <button class="ctrl-btn" id="ctrl-next-ep" aria-label="Sonraki Bölüm">⏭</button>
             <div class="volume-ctrl">
-              <svg viewBox="0 0 24 24" fill="currentColor" width="18"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor" width="18">
+                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+              </svg>
               <input type="range" id="volume-range" min="0" max="100" value="80" class="volume-range" />
             </div>
             <span class="quality-badge">HD</span>
@@ -261,9 +289,12 @@
       </div>
       <div class="player-sidebar">
         <div class="episodes-panel">
-          <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+          <div class="panel-header"
+            style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
             <h4 class="episodes-title" id="sidebar-title" style="margin: 0;">Sezonlar</h4>
-            <button id="back-to-seasons" style="display: none; background: none; border: none; color: var(--sakura-pink); font-weight: 600; cursor: pointer;">← Geri</button>
+            <button id="back-to-seasons"
+              style="display: none; background: none; border: none; color: var(--sakura-pink); font-weight: 600; cursor: pointer;">←
+              Geri</button>
           </div>
           <div class="seasons-list" id="seasons-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
           <div class="episodes-list" id="episodes-list" style="display: none;"></div>
@@ -303,7 +334,8 @@
         </div>
         <button type="submit" class="btn-primary full-width" id="login-submit-btn">Giriş Yap</button>
       </form>
-      <p class="modal-switch" id="modal-switch-text">Hesabın yok mu? <a href="#" id="switch-to-register">Kayıt Ol</a></p>
+      <p class="modal-switch" id="modal-switch-text">Hesabın yok mu? <a href="#" id="switch-to-register">Kayıt Ol</a>
+      </p>
     </div>
   </div>
 
@@ -322,7 +354,6 @@
       <div class="admin-tabs">
         <button class="admin-tab active" data-tab="add-anime" id="tab-add-anime">Anime Ekle</button>
         <button class="admin-tab" data-tab="add-episode" id="tab-add-episode">Bölüm / Video Ekle</button>
-        <button class="admin-tab" data-tab="delete-anime" id="tab-delete-anime">Anime Sil</button>
       </div>
 
       <!-- Anime Ekle Formu -->
@@ -344,9 +375,9 @@
             </select>
           </div>
           <div class="form-group">
-            <label for="anime-img-input">Kapak Görsel URL</label>
-            <input type="url" id="anime-img-input" placeholder="https://..." />
-          </div>
+          <label for="forum-post-image">Görsel (İsteğe bağlı - Fotoğraf Seç)</label>
+          <input type="file" id="forum-post-image" accept="image/*" />
+        </div>
           <div class="form-group">
             <label for="anime-seasons-input">Sezon Sayısı</label>
             <input type="number" id="anime-seasons-input" value="1" min="1" />
@@ -360,7 +391,9 @@
         <form id="add-episode-form">
           <div class="form-group">
             <label for="ep-anime-select">Anime Seç</label>
-            <select id="ep-anime-select"><option>Yükleniyor...</option></select>
+            <select id="ep-anime-select">
+              <option>Yükleniyor...</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="ep-season-input">Sezon No</label>
@@ -381,17 +414,6 @@
           <button type="submit" class="btn-primary full-width" id="add-episode-submit">Bölüm Ekle</button>
         </form>
       </div>
-
-      <!-- Anime Sil Formu -->
-      <div id="admin-tab-delete-anime" class="admin-tab-content" style="display:none">
-        <form id="delete-anime-form">
-          <div class="form-group">
-            <label for="delete-anime-select">Silinecek Anime Seç</label>
-            <select id="delete-anime-select" required><option>Yükleniyor...</option></select>
-          </div>
-          <button type="submit" class="btn-primary full-width" id="delete-anime-submit" style="background: var(--warm-heart-red);">Anime Sil</button>
-        </form>
-      </div>
     </div>
   </div>
 
@@ -404,7 +426,9 @@
           <h2 class="section-title">Anime Forumu</h2>
         </div>
         <button class="btn-primary forum-new-btn" id="forum-new-btn">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+          </svg>
           Gönderi Paylaş
         </button>
       </div>
@@ -460,11 +484,20 @@
         </div>
         <div class="form-group">
           <label for="forum-post-content">İçerik</label>
-          <textarea id="forum-post-content" placeholder="Düşüncelerini buraya yaz..." rows="5" maxlength="2000" required></textarea>
+          <textarea id="forum-post-content" placeholder="Düşüncelerini buraya yaz..." rows="5" maxlength="2000"
+            required></textarea>
         </div>
         <div class="form-group">
           <label for="forum-post-anime">İlgili Anime (isteğe bağlı)</label>
           <input type="text" id="forum-post-anime" placeholder="örn: Attack on Titan" maxlength="80" />
+        </div>
+        <div class="form-group">
+          <label for="forum-post-image">Fotoğraf ekle (isteğe bağlı)</label>
+          <input type="file" id="forum-post-image" accept="image/png,image/jpeg,image/webp,image/gif" />
+          <div class="forum-image-preview" id="forum-image-preview" style="display:none">
+            <img id="forum-image-preview-img" src="" alt="Önizleme" />
+            <button type="button" class="forum-image-remove" id="forum-image-remove" aria-label="Kaldır">✕</button>
+          </div>
         </div>
         <button type="submit" class="btn-primary full-width" id="forum-post-submit">Gönderi Paylaş 🌸</button>
       </form>
@@ -542,4 +575,5 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
 </body>
+
 </html>
