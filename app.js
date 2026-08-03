@@ -917,7 +917,8 @@ document.addEventListener('DOMContentLoaded', () => {
       body: formData,
     });
     const data = await res.json();
-    if (!data || !data.success) throw new Error('imgbb yükleme başarısız');
+    console.log('[Forum] imgbb yanıtı:', data);
+    if (!data || !data.success) throw new Error('imgbb yükleme başarısız: ' + JSON.stringify(data));
     return data.data.url; // doğrudan görsel linki (i.ibb.co/...)
   };
 
@@ -978,7 +979,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <span class="forum-cat-badge ${post.category}">${CAT_LABELS[post.category] || post.category}</span>
         </div>
-        ${post.image_url ? `<img class="forum-card-img" src="${wsrvUrl(post.image_url, { w: 500, h: 340 })}" alt="Gönderi görseli" loading="lazy" />` : ''}
+        ${post.image_url ? `<img class="forum-card-img" src="${wsrvUrl(post.image_url, { w: 500, h: 340 })}" alt="Gönderi görseli" loading="lazy" onerror="this.onerror=null;this.src='${post.image_url}';" />` : ''}
         <div class="forum-card-title">${post.title}</div>
         <div class="forum-card-excerpt">${post.content}</div>
         ${post.anime_tag ? `<span class="forum-card-anime-tag">🎌 ${post.anime_tag}</span>` : ''}
@@ -1007,6 +1008,22 @@ document.addEventListener('DOMContentLoaded', () => {
     return forumPosts.filter(p => p.category === activeCat);
   };
 
+  // ─── Yerel yedek gönderiler ───
+  // Supabase'e kaydedilemeyen (örn. tablo/kolon eksikse) gönderiler burada tutulur,
+  // böylece sayfa yenilense bile kaybolmazlar.
+  const getLocalForumPosts = () => {
+    try {
+      return JSON.parse(localStorage.getItem('kk_local_forum_posts') || '[]');
+    } catch (_) {
+      return [];
+    }
+  };
+  const saveLocalForumPost = (post) => {
+    const posts = getLocalForumPosts();
+    posts.unshift(post);
+    localStorage.setItem('kk_local_forum_posts', JSON.stringify(posts.slice(0, 100)));
+  };
+
   const loadForumPosts = async () => {
     const grid = document.getElementById('forum-grid');
     if (!grid) return;
@@ -1022,12 +1039,20 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!error && data && data.length > 0) {
         forumPosts = data;
       } else {
+        if (error) console.error('[Forum] Supabase gönderi çekme hatası:', error);
         // Supabase yoksa mock data kullan
         forumPosts = mockForumPosts;
       }
     } catch (e) {
+      console.error('[Forum] Supabase bağlantı hatası:', e);
       forumPosts = mockForumPosts;
     }
+
+    // Supabase'e yazılamamış, yerelde tutulan gönderileri en başa ekle
+    const localPosts = getLocalForumPosts();
+    const existingIds = new Set(forumPosts.map(p => String(p.id)));
+    const mergedLocal = localPosts.filter(p => !existingIds.has(String(p.id)));
+    forumPosts = [...mergedLocal, ...forumPosts];
 
     renderForumGrid(getFilteredPosts());
   };
@@ -1095,7 +1120,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${post.anime_tag ? `<span class="forum-card-anime-tag">🎌 ${post.anime_tag}</span>` : ''}
         </div>
         <div class="forum-detail-title">${post.title}</div>
-        ${post.image_url ? `<img class="forum-detail-img" src="${wsrvUrl(post.image_url, { w: 900, q: 85 })}" alt="Gönderi görseli" loading="lazy" />` : ''}
+        ${post.image_url ? `<img class="forum-detail-img" src="${wsrvUrl(post.image_url, { w: 900, q: 85 })}" alt="Gönderi görseli" loading="lazy" onerror="this.onerror=null;this.src='${post.image_url}';" />` : ''}
         <div class="forum-detail-body">${post.content}</div>
         <div class="forum-detail-actions">
           <button class="forum-like-btn ${isLiked ? 'liked' : ''}" data-post-id="${postId}" id="detail-like-btn">
@@ -1340,7 +1365,8 @@ document.addEventListener('DOMContentLoaded', () => {
         submitBtn.textContent = 'Fotoğraf yükleniyor...';
         try {
           imageUrl = await uploadImageToImgbb(selectedImageFile);
-        } catch (_) {
+        } catch (err) {
+          console.error('[Forum] Görsel yükleme hatası:', err);
           showToast('Fotoğraf yüklenemedi, gönderi görselsiz paylaşılacak.', '⚠️');
         }
         submitBtn.textContent = 'Paylaşılıyor...';
@@ -1358,7 +1384,7 @@ document.addEventListener('DOMContentLoaded', () => {
         created_at: new Date().toISOString(),
       };
 
-      // Supabase'e kaydetmeyi dene, başarısız olursa local state'e ekle
+      // Supabase'e kaydetmeyi dene, başarısız olursa local state'e (ve localStorage'a) ekle
       try {
         const { data: inserted, error } = await supabaseClient
           .from('forum_posts')
@@ -1368,12 +1394,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!error && inserted) {
           forumPosts.unshift(inserted);
         } else {
+          console.error('[Forum] Supabase gönderi kaydetme hatası:', error);
           newPost.id = 'fp-local-' + Date.now();
           forumPosts.unshift(newPost);
+          saveLocalForumPost(newPost);
+          showToast('Gönderi buluta kaydedilemedi, cihazında saklanıyor.', 'ℹ️');
         }
-      } catch (_) {
+      } catch (err) {
+        console.error('[Forum] Supabase bağlantı hatası:', err);
         newPost.id = 'fp-local-' + Date.now();
         forumPosts.unshift(newPost);
+        saveLocalForumPost(newPost);
+        showToast('Gönderi buluta kaydedilemedi, cihazında saklanıyor.', 'ℹ️');
       }
 
       renderForumGrid(getFilteredPosts());
