@@ -202,11 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // wsrv.nl üzerinden görseli yeniden boyutlandırıp optimize eden URL üretir
   // wsrv.nl kendisi depolama yapmaz; zaten var olan bir URL'yi proxy'ler.
-  const wsrvUrl = (url, { w, h, q = 80, fit = 'cover' } = {}) => {
+  const wsrvUrl = (url, { w, h, q = 80, fit = 'cover', bg } = {}) => {
     if (!url) return '';
     const params = new URLSearchParams({ url, q: String(q), fit });
     if (w) params.set('w', String(w));
     if (h) params.set('h', String(h));
+    if (bg) params.set('bg', bg);
     return `https://wsrv.nl/?${params.toString()}`;
   };
 
@@ -1050,7 +1051,7 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
           <span class="forum-cat-badge ${post.category}">${CAT_LABELS[post.category] || post.category}</span>
         </div>
-        ${post.image_url ? `<img class="forum-card-img" src="${wsrvUrl(post.image_url, { w: 500, h: 340 })}" alt="Gönderi görseli" loading="lazy" onerror="this.onerror=null;this.src='${post.image_url}';" />` : ''}
+        ${post.image_url ? `<img class="forum-card-img" src="${wsrvUrl(post.image_url, { w: 500, h: 340, fit: 'inside' })}" alt="Gönderi görseli" loading="lazy" onerror="this.onerror=null;this.src='${post.image_url}';" />` : ''}
         <div class="forum-card-title">${post.title}</div>
         <div class="forum-card-excerpt">${post.content}</div>
         ${post.anime_tag ? `<span class="forum-card-anime-tag">🎌 ${post.anime_tag}</span>` : ''}
@@ -1191,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', () => {
           ${post.anime_tag ? `<span class="forum-card-anime-tag">🎌 ${post.anime_tag}</span>` : ''}
         </div>
         <div class="forum-detail-title">${post.title}</div>
-        ${post.image_url ? `<img class="forum-detail-img" src="${wsrvUrl(post.image_url, { w: 900, q: 85 })}" alt="Gönderi görseli" loading="lazy" onerror="this.onerror=null;this.src='${post.image_url}';" />` : ''}
+        ${post.image_url ? `<img class="forum-detail-img" src="${wsrvUrl(post.image_url, { w: 900, q: 85, fit: 'inside' })}" alt="Gönderi görseli" loading="lazy" onerror="this.onerror=null;this.src='${post.image_url}';" />` : ''}
         <div class="forum-detail-body">${post.content}</div>
         <div class="forum-detail-actions">
           <button class="forum-like-btn ${isLiked ? 'liked' : ''}" data-post-id="${postId}" id="detail-like-btn">
