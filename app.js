@@ -182,6 +182,80 @@ document.addEventListener('DOMContentLoaded', () => {
     }, 3000);
   };
 
+  // ─── GÖRSEL YÜKLEME (imgbb + wsrv.nl) — hem forum hem admin panelinde kullanılır ───
+  const IMGBB_API_KEY = '273b87e235f85d989e9ed809490193c9';
+  const MAX_IMAGE_MB = 5;
+
+  // Seçilen dosyayı imgbb'ye yükler, kalıcı bir görsel URL'si döndürür
+  const uploadImageToImgbb = async (file) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json();
+    console.log('[Görsel] imgbb yanıtı:', data);
+    if (!data || !data.success) throw new Error('imgbb yükleme başarısız: ' + JSON.stringify(data));
+    return data.data.url; // doğrudan görsel linki (i.ibb.co/...)
+  };
+
+  // wsrv.nl üzerinden görseli yeniden boyutlandırıp optimize eden URL üretir
+  // wsrv.nl kendisi depolama yapmaz; zaten var olan bir URL'yi proxy'ler.
+  const wsrvUrl = (url, { w, h, q = 80, fit = 'cover' } = {}) => {
+    if (!url) return '';
+    const params = new URLSearchParams({ url, q: String(q), fit });
+    if (w) params.set('w', String(w));
+    if (h) params.set('h', String(h));
+    return `https://wsrv.nl/?${params.toString()}`;
+  };
+
+  // Dosya seçme + önizleme mantığını tek bir yerden yönetir (ID çakışmasını önlemek için).
+  // Elemanlardan biri sayfada yoksa sessizce atlar (o form o sayfada olmayabilir).
+  const setupImagePicker = ({ inputId, previewId, previewImgId, removeId }) => {
+    const input = document.getElementById(inputId);
+    const preview = document.getElementById(previewId);
+    const previewImg = document.getElementById(previewImgId);
+    const removeBtn = document.getElementById(removeId);
+
+    if (!input || !preview || !previewImg) {
+      return { getFile: () => null, clear: () => {} };
+    }
+
+    const clear = () => {
+      input.value = '';
+      preview.style.display = 'none';
+      previewImg.src = '';
+    };
+
+    input.addEventListener('change', () => {
+      const file = input.files?.[0];
+      if (!file) { clear(); return; }
+
+      if (!file.type.startsWith('image/')) {
+        showToast('Lütfen bir görsel dosyası seç.', '⚠️');
+        clear();
+        return;
+      }
+      if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
+        showToast(`Görsel en fazla ${MAX_IMAGE_MB}MB olabilir.`, '⚠️');
+        clear();
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        previewImg.src = reader.result;
+        preview.style.display = 'block';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if (removeBtn) removeBtn.addEventListener('click', clear);
+
+    return { getFile: () => input.files?.[0] || null, clear };
+  };
+
   // Add to list functionality
   document.addEventListener('click', (e) => {
     if (e.target.closest('.card-add-btn')) {
@@ -835,6 +909,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
+  // Anime kapak fotoğrafı seçimi → önizleme
+  const animeCoverPicker = setupImagePicker({
+    inputId: 'anime-cover-input',
+    previewId: 'anime-cover-preview',
+    previewImgId: 'anime-cover-preview-img',
+    removeId: 'anime-cover-remove',
+  });
+
   // Anime Ekle Formu
   const addAnimeForm = document.getElementById('add-anime-form');
   if (addAnimeForm) {
@@ -842,22 +924,37 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       const title = document.getElementById('anime-title-input').value.trim();
       const genre = document.getElementById('anime-genre-input').value;
-      const img = document.getElementById('anime-img-input').value.trim();
       const seasons = parseInt(document.getElementById('anime-seasons-input').value);
 
       const submitBtn = document.getElementById('add-anime-submit');
       submitBtn.disabled = true;
       submitBtn.textContent = 'Ekleniyor...';
 
+      // Kapak fotoğrafı seçilmişse imgbb'ye yükle
+      let img = 'https://via.placeholder.com/400x600?text=Kapak+Yok';
+      const selectedCoverFile = animeCoverPicker.getFile();
+      if (selectedCoverFile) {
+        submitBtn.textContent = 'Kapak yükleniyor...';
+        try {
+          img = await uploadImageToImgbb(selectedCoverFile);
+        } catch (err) {
+          console.error('[Anime] Kapak yükleme hatası:', err);
+          showToast('Kapak fotoğrafı yüklenemedi, varsayılan kapak kullanılacak.', '⚠️');
+        }
+        submitBtn.textContent = 'Ekleniyor...';
+      }
+
       const { error } = await supabaseClient.from('animes').insert({
         title, genre, img, seasons, created_at: new Date().toISOString()
       });
 
       if (error) {
+        console.error('[Anime] Supabase ekleme hatası:', error);
         showToast('Hata: ' + error.message, '❌');
       } else {
         showToast(`"${title}" eklendi! 🎌`, '✨');
         addAnimeForm.reset();
+        animeCoverPicker.clear();
         await loadAnimesForSelect();
       }
 
@@ -900,37 +997,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+
+
   // ─── FORUM ───
   const AVATARS = ['🌸', '🦊', '🐼', '🐱', '🌙', '⭐', '🎌', '🦋', '🍡', '🎏'];
   const CAT_LABELS = { tavsiye: '💡 Tavsiye', tartisma: '🔥 Tartışma', teori: '🔮 Teori', 'fan-art': '🎨 Fan Art', duyuru: '📢 Duyuru' };
-
-  // ─── FORUM GÖRSEL YÜKLEME (imgbb) ───
-  const IMGBB_API_KEY = '273b87e235f85d989e9ed809490193c9';
-  const MAX_IMAGE_MB = 5;
-
-  // Seçilen dosyayı imgbb'ye yükler, kalıcı bir görsel URL'si döndürür
-  const uploadImageToImgbb = async (file) => {
-    const formData = new FormData();
-    formData.append('image', file);
-    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
-      method: 'POST',
-      body: formData,
-    });
-    const data = await res.json();
-    console.log('[Forum] imgbb yanıtı:', data);
-    if (!data || !data.success) throw new Error('imgbb yükleme başarısız: ' + JSON.stringify(data));
-    return data.data.url; // doğrudan görsel linki (i.ibb.co/...)
-  };
-
-  // wsrv.nl üzerinden görseli yeniden boyutlandırıp optimize eden URL üretir
-  // wsrv.nl kendisi depolama yapmaz; zaten var olan bir URL'yi proxy'ler.
-  const wsrvUrl = (url, { w, h, q = 80, fit = 'cover' } = {}) => {
-    if (!url) return '';
-    const params = new URLSearchParams({ url, q: String(q), fit });
-    if (w) params.set('w', String(w));
-    if (h) params.set('h', String(h));
-    return `https://wsrv.nl/?${params.toString()}`;
-  };
 
   // Mock posts for demo (loaded if DB is empty)
   const mockForumPosts = [
@@ -1284,45 +1355,12 @@ document.addEventListener('DOMContentLoaded', () => {
   forumModal.addEventListener('click', (e) => { if (e.target === forumModal) closeForumModal(); });
 
   // Fotoğraf seçimi → önizleme
-  const forumImageInput = document.getElementById('forum-post-image');
-  const forumImagePreview = document.getElementById('forum-image-preview');
-  const forumImagePreviewImg = document.getElementById('forum-image-preview-img');
-  const forumImageRemove = document.getElementById('forum-image-remove');
-
-  const clearForumImageSelection = () => {
-    forumImageInput.value = '';
-    forumImagePreview.style.display = 'none';
-    forumImagePreviewImg.src = '';
-  };
-
-  if (forumImageInput) {
-    forumImageInput.addEventListener('change', () => {
-      const file = forumImageInput.files?.[0];
-      if (!file) { clearForumImageSelection(); return; }
-
-      if (!file.type.startsWith('image/')) {
-        showToast('Lütfen bir görsel dosyası seç.', '⚠️');
-        clearForumImageSelection();
-        return;
-      }
-      if (file.size > MAX_IMAGE_MB * 1024 * 1024) {
-        showToast(`Görsel en fazla ${MAX_IMAGE_MB}MB olabilir.`, '⚠️');
-        clearForumImageSelection();
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = () => {
-        forumImagePreviewImg.src = reader.result;
-        forumImagePreview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  if (forumImageRemove) {
-    forumImageRemove.addEventListener('click', clearForumImageSelection);
-  }
+  const forumImagePicker = setupImagePicker({
+    inputId: 'forum-post-image',
+    previewId: 'forum-image-preview',
+    previewImgId: 'forum-image-preview-img',
+    removeId: 'forum-image-remove',
+  });
 
   // New Post Form Submit
   document.getElementById('forum-post-form').addEventListener('submit', async (e) => {
@@ -1360,7 +1398,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Fotoğraf seçilmişse önce imgbb'ye yükle
       let imageUrl = null;
-      const selectedImageFile = forumImageInput?.files?.[0] || null;
+      const selectedImageFile = forumImagePicker.getFile();
       if (selectedImageFile) {
         submitBtn.textContent = 'Fotoğraf yükleniyor...';
         try {
@@ -1411,7 +1449,7 @@ document.addEventListener('DOMContentLoaded', () => {
       renderForumGrid(getFilteredPosts());
       showToast('Gönderin paylaşıldı! 🌸', '✨');
       document.getElementById('forum-post-form').reset();
-      clearForumImageSelection();
+      forumImagePicker.clear();
       closeForumModal();
 
       // Scroll to forum

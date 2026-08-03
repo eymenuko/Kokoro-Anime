@@ -375,6 +375,14 @@
             </select>
           </div>
           <div class="form-group">
+            <label for="anime-cover-input">Kapak Fotoğrafı</label>
+            <input type="file" id="anime-cover-input" accept="image/png,image/jpeg,image/webp,image/gif" />
+            <div class="forum-image-preview" id="anime-cover-preview" style="display:none">
+              <img id="anime-cover-preview-img" src="" alt="Kapak önizleme" />
+              <button type="button" class="forum-image-remove" id="anime-cover-remove" aria-label="Kaldır">✕</button>
+            </div>
+          </div>
+          <div class="form-group">
             <label for="anime-seasons-input">Sezon Sayısı</label>
             <input type="number" id="anime-seasons-input" value="1" min="1" />
           </div>
