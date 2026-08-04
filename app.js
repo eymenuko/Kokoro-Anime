@@ -257,6 +257,24 @@ document.addEventListener('DOMContentLoaded', () => {
     return { getFile: () => input.files?.[0] || null, clear };
   };
 
+  // ─── KARANLIK MOD ───
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  const applyTheme = (theme) => {
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    try { localStorage.setItem('kk_theme', theme); } catch (_) {}
+  };
+
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      applyTheme(isDark ? 'light' : 'dark');
+    });
+  }
+
   // Add to list functionality
   document.addEventListener('click', (e) => {
     if (e.target.closest('.card-add-btn')) {

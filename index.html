@@ -13,6 +13,17 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+JP:wght@300;400;500&display=swap"
     rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
+  <script>
+    // Sayfa render edilmeden önce kayıtlı temayı uygula (aydınlık/karanlık flaşını önler)
+    (function () {
+      try {
+        var saved = localStorage.getItem('kk_theme');
+        if (saved === 'dark') {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (_) {}
+    })();
+  </script>
 </head>
 
 <body>
@@ -21,9 +32,8 @@
   <nav class="navbar" id="navbar">
     <div class="nav-inner">
       <a href="#" class="logo" id="logo-link">
-        <span class="logo-kanji">心</span>
-        <span class="logo-text">KOKORO</span>
-        <span class="logo-sub">ANIME</span>
+        <img src="logo.png" alt="Kokoro Anime" class="logo-img logo-img-light" />
+        <img src="logo-dark.png" alt="Kokoro Anime" class="logo-img logo-img-dark" />
       </a>
       <ul class="nav-links" id="nav-links">
         <li><a href="#" class="nav-link active" id="nav-home">Ana Sayfa</a></li>
@@ -33,6 +43,22 @@
         <li><a href="#forum-section" class="nav-link" id="nav-forum">💬 Forum</a></li>
       </ul>
       <div class="nav-actions">
+        <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Karanlık/Aydınlık mod">
+          <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4.5" />
+            <line x1="12" y1="2.5" x2="12" y2="4.5" />
+            <line x1="12" y1="19.5" x2="12" y2="21.5" />
+            <line x1="4.2" y1="4.2" x2="5.6" y2="5.6" />
+            <line x1="18.4" y1="18.4" x2="19.8" y2="19.8" />
+            <line x1="2.5" y1="12" x2="4.5" y2="12" />
+            <line x1="19.5" y1="12" x2="21.5" y2="12" />
+            <line x1="4.2" y1="19.8" x2="5.6" y2="18.4" />
+            <line x1="18.4" y1="5.6" x2="19.8" y2="4.2" />
+          </svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.5 14.5a8.5 8.5 0 0 1-11-11 8.5 8.5 0 1 0 11 11Z" />
+          </svg>
+        </button>
         <button class="search-btn" id="search-toggle-btn" aria-label="Ara">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
             stroke-linejoin="round">
