@@ -149,14 +149,14 @@ h1, h2, h3, h4 {
 }
 
 .logo-img {
-  height: 62px;
+  height: 75px;
   width: auto;
   display: block;
   transition: var(--transition-fast);
 }
 
 .navbar.scrolled .logo-img {
-  height: 52px;
+  height: 58px;
 }
 
 .logo-img-dark {
