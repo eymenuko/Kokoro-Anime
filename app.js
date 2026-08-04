@@ -211,6 +211,11 @@ document.addEventListener('DOMContentLoaded', () => {
     return `https://wsrv.nl/?${params.toString()}`;
   };
 
+  // Yeni kullanıcılara verilecek hazır (rastgele/kişiye özel) profil fotoğrafı.
+  // DiceBear halka açık, ücretsiz bir avatar üretme servisidir; API key gerektirmez.
+  const getDefaultAvatarUrl = (seed) =>
+    `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(seed || Math.random().toString(36))}&backgroundType=gradientLinear`;
+
   // Dosya seçme + önizleme mantığını tek bir yerden yönetir (ID çakışmasını önlemek için).
   // Elemanlardan biri sayfada yoksa sessizce atlar (o form o sayfada olmayabilir).
   const setupImagePicker = ({ inputId, previewId, previewImgId, removeId }) => {
@@ -687,6 +692,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) loginForm.reset();
   };
 
+  const renderUserAvatar = (avatarUrl) => {
+    const avatarEl = document.getElementById('user-avatar');
+    if (!avatarEl) return;
+    if (avatarUrl) {
+      avatarEl.innerHTML = `<img src="${wsrvUrl(avatarUrl, { w: 64, h: 64, fit: 'cover' })}" alt="Profil fotoğrafı" onerror="this.onerror=null;this.src='${avatarUrl}';" />`;
+    } else {
+      avatarEl.textContent = '🌸';
+    }
+  };
+
   const updateNavbar = async (user) => {
     if (user) {
       loginMenuBtn.style.display = 'none';
@@ -694,12 +709,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const email = user.email || '';
       userEmailDisplay.textContent = email.split('@')[0];
 
-      // Admin rolünü kontrol et
+      // Admin rolünü ve profil fotoğrafını kontrol et
       const { data: profile } = await supabaseClient
         .from('profiles')
-        .select('role')
+        .select('role, avatar_url')
         .eq('id', user.id)
         .single();
+
+      window._currentAvatarUrl = profile?.avatar_url || null;
+      renderUserAvatar(window._currentAvatarUrl);
 
       const adminBtn = document.getElementById('admin-panel-btn');
       if (profile?.role === 'admin') {
@@ -713,6 +731,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loginMenuBtn.style.display = 'block';
       userMenu.style.display = 'none';
       window._isAdmin = false;
+      window._currentAvatarUrl = null;
       const adminBtn = document.getElementById('admin-panel-btn');
       if (adminBtn) adminBtn.style.display = 'none';
     }
@@ -754,7 +773,7 @@ document.addEventListener('DOMContentLoaded', () => {
       loginSubmitBtn.textContent = isRegisterMode ? 'Kayıt oluyor...' : 'Giriş yapılıyor...';
 
       if (isRegisterMode) {
-        const { error } = await supabaseClient.auth.signUp({
+        const { data: signUpData, error } = await supabaseClient.auth.signUp({
           email,
           password,
           options: { data: { username: name } }
@@ -764,6 +783,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           showToast('Kayıt başarılı! Lütfen e-posta adresini doğrula 📧', '🌸');
           closeLogin();
+
+          // Yeni kullanıcıya hazır bir profil fotoğrafı ata
+          const newUserId = signUpData?.user?.id;
+          if (newUserId) {
+            try {
+              const { error: profileErr } = await supabaseClient
+                .from('profiles')
+                .upsert({ id: newUserId, avatar_url: getDefaultAvatarUrl(email), username: name || null });
+              if (profileErr) console.error('[Profil] Varsayılan avatar atanamadı:', profileErr);
+            } catch (err) {
+              console.error('[Profil] Varsayılan avatar hatası:', err);
+            }
+          }
         }
       } else {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
@@ -782,6 +814,95 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // İlk mod ayarı
   setMode(false);
+
+  // ─── PROFİL MODAL ───
+  const profileModal = document.getElementById('profile-modal');
+  const profileClose = document.getElementById('profile-close');
+  const profileAvatarCurrent = document.getElementById('profile-avatar-current');
+  const profileAvatarSaveBtn = document.getElementById('profile-avatar-save');
+
+  const profileAvatarPicker = setupImagePicker({
+    inputId: 'profile-avatar-input',
+    previewId: 'profile-avatar-preview',
+    previewImgId: 'profile-avatar-preview-img',
+    removeId: 'profile-avatar-remove',
+  });
+
+  const renderProfileModalCurrentAvatar = () => {
+    if (!profileAvatarCurrent) return;
+    if (window._currentAvatarUrl) {
+      profileAvatarCurrent.innerHTML = `<img src="${wsrvUrl(window._currentAvatarUrl, { w: 200, h: 200, fit: 'cover' })}" alt="Mevcut profil fotoğrafı" onerror="this.onerror=null;this.src='${window._currentAvatarUrl}';" />`;
+    } else {
+      profileAvatarCurrent.textContent = '🌸';
+    }
+  };
+
+  const openProfileModal = () => {
+    if (!profileModal) return;
+    renderProfileModalCurrentAvatar();
+    profileAvatarPicker.clear();
+    profileModal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+
+  const closeProfileModal = () => {
+    if (!profileModal) return;
+    profileModal.classList.remove('active');
+    document.body.style.overflow = '';
+  };
+
+  const userAvatarBtn = document.getElementById('user-avatar');
+  if (userAvatarBtn) userAvatarBtn.addEventListener('click', openProfileModal);
+  if (profileClose) profileClose.addEventListener('click', closeProfileModal);
+  if (profileModal) {
+    profileModal.addEventListener('click', (e) => {
+      if (e.target === profileModal) closeProfileModal();
+    });
+  }
+
+  if (profileAvatarSaveBtn) {
+    profileAvatarSaveBtn.addEventListener('click', async () => {
+      const selectedFile = profileAvatarPicker.getFile();
+      if (!selectedFile) {
+        showToast('Önce bir fotoğraf seç.', '⚠️');
+        return;
+      }
+
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) {
+        showToast('Bu işlem için giriş yapmalısın!', '⚠️');
+        return;
+      }
+
+      profileAvatarSaveBtn.disabled = true;
+      profileAvatarSaveBtn.textContent = 'Yükleniyor...';
+
+      try {
+        const newAvatarUrl = await uploadImageToImgbb(selectedFile);
+        const { error } = await supabaseClient
+          .from('profiles')
+          .upsert({ id: user.id, avatar_url: newAvatarUrl });
+
+        if (error) {
+          console.error('[Profil] Avatar kaydetme hatası:', error);
+          showToast('Fotoğraf kaydedilemedi: ' + error.message, '❌');
+        } else {
+          window._currentAvatarUrl = newAvatarUrl;
+          renderUserAvatar(newAvatarUrl);
+          renderProfileModalCurrentAvatar();
+          profileAvatarPicker.clear();
+          showToast('Profil fotoğrafın güncellendi! 🌸', '✨');
+          closeProfileModal();
+        }
+      } catch (err) {
+        console.error('[Profil] Fotoğraf yükleme hatası:', err);
+        showToast('Fotoğraf yüklenemedi, tekrar dene.', '❌');
+      }
+
+      profileAvatarSaveBtn.disabled = false;
+      profileAvatarSaveBtn.textContent = 'Kaydet';
+    });
+  }
 
   // ─── SEARCH OVERLAY ───
   const searchOverlay = document.getElementById('search-overlay');

@@ -70,7 +70,7 @@
         <button class="login-btn" id="login-btn" style="display:block">Giriş Yap</button>
         <!-- Giriş yapılmışsa -->
         <div class="user-menu" id="user-menu" style="display:none">
-          <div class="user-avatar" id="user-avatar">🌸</div>
+          <div class="user-avatar" id="user-avatar" title="Profil fotoğrafını değiştir">🌸</div>
           <span class="user-email" id="user-email-display"></span>
           <button class="admin-panel-btn" id="admin-panel-btn" style="display:none" aria-label="Admin Paneli">
             ⚙️ Admin
@@ -362,6 +362,32 @@
       </form>
       <p class="modal-switch" id="modal-switch-text">Hesabın yok mu? <a href="#" id="switch-to-register">Kayıt Ol</a>
       </p>
+    </div>
+  </div>
+
+  <!-- ─── PROFİL MODAL ─── -->
+  <div class="modal-overlay" id="profile-modal">
+    <div class="modal-card" id="profile-card">
+      <button class="modal-close" id="profile-close" aria-label="Kapat">✕</button>
+      <div class="modal-logo">
+        <span class="logo-kanji small">心</span>
+        <span>Profilim</span>
+      </div>
+      <h2 class="modal-title">Profil Fotoğrafı</h2>
+      <p class="modal-sub">İstersen kendi fotoğrafını yükleyebilirsin</p>
+
+      <div class="profile-avatar-current" id="profile-avatar-current"></div>
+
+      <div class="form-group">
+        <label for="profile-avatar-input">Yeni fotoğraf seç</label>
+        <input type="file" id="profile-avatar-input" accept="image/png,image/jpeg,image/webp,image/gif" />
+        <div class="forum-image-preview" id="profile-avatar-preview" style="display:none">
+          <img id="profile-avatar-preview-img" src="" alt="Önizleme" />
+          <button type="button" class="forum-image-remove" id="profile-avatar-remove" aria-label="Kaldır">✕</button>
+        </div>
+      </div>
+
+      <button type="button" class="btn-primary full-width" id="profile-avatar-save">Kaydet</button>
     </div>
   </div>
 

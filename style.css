@@ -345,6 +345,36 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 1rem;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.profile-avatar-current {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  margin: 0.5rem auto 1.25rem;
+  background: linear-gradient(135deg, var(--sakura-pink), var(--warm-heart-red));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  overflow: hidden;
+}
+
+.profile-avatar-current img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .user-email {
